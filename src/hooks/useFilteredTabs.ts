@@ -1,12 +1,21 @@
 import { useState, useEffect } from 'react';
 import { Tab } from '../tabutil';
 
-export type TabFilterArg = 'audible' | 'all' | 'currentwindow';
-export type SortOrder = 'count' | 'asc' | 'desc';
+export enum TabFilterType {
+  Audible = 'audible',
+  All = 'all',
+  CurrentWindow = 'currentWindow',
+}
+
+export enum SortOrder {
+  Count = 'count',
+  Asc = 'asc',
+  Desc = 'desc',
+}
 
 export function useFilteredTabs(tabs: Tab[], searchQuery: string = '') {
-  const [filter, setFilter] = useState<TabFilterArg>('all');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('count');
+  const [filter, setFilter] = useState<TabFilterType>(TabFilterType.All);
+  const [sortOrder, setSortOrder] = useState<SortOrder>(SortOrder.Count);
   const [loading, setLoading] = useState(true);
   const [domains, setDomains] = useState<Record<string, Tab[]>>({});
   const [sortedDomains, setSortedDomains] = useState<
@@ -41,9 +50,9 @@ export function useFilteredTabs(tabs: Tab[], searchQuery: string = '') {
     sortedDomains,
     sortOrder,
     setSortOrder,
-    setFilter: (newFilter: TabFilterArg) => {
+    setFilter: (newFilter: TabFilterType) => {
       if (newFilter === filter) {
-        setFilter('all');
+        setFilter(TabFilterType.All);
       } else {
         setFilter(newFilter);
       }
@@ -80,13 +89,13 @@ function sortDomains(domains: Record<string, Tab[]>, order: SortOrder) {
   let sortedDomains: string[];
 
   switch (order) {
-    case 'asc':
+    case SortOrder.Asc:
       sortedDomains = keys.sort();
       break;
-    case 'desc':
+    case SortOrder.Desc:
       sortedDomains = keys.sort().reverse();
       break;
-    case 'count':
+    case SortOrder.Count:
       sortedDomains = keys.sort(
         (firstDomain, secondDomain) =>
           domains[secondDomain].length - domains[firstDomain].length,
@@ -97,13 +106,13 @@ function sortDomains(domains: Record<string, Tab[]>, order: SortOrder) {
   return sortedDomains.map((domain) => ({ domain, tabs: domains[domain] }));
 }
 
-async function filterTabs(filter: TabFilterArg, tabs: Tab[]): Promise<Tab[]> {
+async function filterTabs(filter: TabFilterType, tabs: Tab[]): Promise<Tab[]> {
   switch (filter) {
-    case 'all':
+    case TabFilterType.All:
       return tabs;
-    case 'audible':
+    case TabFilterType.Audible:
       return tabs.filter((tab) => tab.audible);
-    case 'currentwindow': {
+    case TabFilterType.CurrentWindow: {
       const currentWindow = await chrome.windows.getCurrent();
       return tabs.filter((tab) => tab.windowId === currentWindow.id);
     }
