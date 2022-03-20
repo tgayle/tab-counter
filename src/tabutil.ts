@@ -28,7 +28,7 @@ export async function getTabInfo(): Promise<TabInfo> {
   };
 }
 
-type TabStats = {
+export type TabStats = {
   audible: Tab[];
   muted: Tab[];
 };
