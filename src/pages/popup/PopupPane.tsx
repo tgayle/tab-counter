@@ -67,7 +67,7 @@ const OpenTabGroup = ({ tabs }: { tabs: TabType[] }) => {
   const [expandedSections, setExpandedSections] = useState<number[]>([]);
 
   useEffect(() => {
-    if (filter === 'all') {
+    if (filter === 'all' && !searchEntry) {
       setExpandedSections([]);
     } else {
       const indexArray: number[] = [];
@@ -77,7 +77,9 @@ const OpenTabGroup = ({ tabs }: { tabs: TabType[] }) => {
 
       setExpandedSections(indexArray);
     }
-  }, [filter]);
+  }, [filter, searchEntry]);
+
+  useEffect(() => setSearchEntry(''), [searchVisible]);
 
   return (
     <div>
