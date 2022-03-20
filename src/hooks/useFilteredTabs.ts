@@ -51,12 +51,24 @@ export function useFilteredTabs(tabs: Tab[], searchQuery: string = '') {
   };
 }
 
+function getDisplayOriginForUrl(url: URL) {
+  const origin = url.origin;
+  if (origin.startsWith('file://')) {
+    return 'Files';
+  } else if (origin === 'chrome://newtab') {
+    return 'New Tabs';
+  } else {
+    return url.host;
+  }
+}
+
 function getDomainGroups(tabs: Tab[]) {
   return tabs.reduce((domains, tab) => {
     const url = new URL(tab.url!);
-    const domainUrls = domains[url.host] || [];
+    const origin = getDisplayOriginForUrl(url);
+    const domainUrls = domains[origin] || [];
     domainUrls.push(tab);
-    domains[url.host] = domainUrls;
+    domains[origin] = domainUrls;
 
     return domains;
   }, {} as Record<string, Tab[]>);
