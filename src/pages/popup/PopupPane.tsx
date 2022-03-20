@@ -119,7 +119,7 @@ const OpenTabGroup = ({ tabs }: { tabs: TabType[] }) => {
             <AccordionButton>
               <Flex flex="1">{domain}</Flex>
               <span>({tabs.length})</span>
-              <AccordionIcon pl={2} />
+              <AccordionIcon ml={2} />
             </AccordionButton>
             <AccordionPanel pb={0}>
               <BrowserTabList tabs={tabs} />
