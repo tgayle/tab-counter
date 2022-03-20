@@ -1,0 +1,12 @@
+{
+  "background": {
+    "service_worker": "background.ts",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "pages/popup/index.html"
+  },
+  "permissions": ["tabs"],
+  "name": "tab-counter-ext",
+  "manifest_version": 3
+}
