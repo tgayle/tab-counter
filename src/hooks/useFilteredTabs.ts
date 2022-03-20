@@ -103,7 +103,14 @@ function sortDomains(domains: Record<string, Tab[]>, order: SortOrder) {
       break;
   }
 
-  return sortedDomains.map((domain) => ({ domain, tabs: domains[domain] }));
+  return sortedDomains.map((domain) => ({
+    domain,
+    tabs: domains[domain].sort((tabA, tabB) => {
+      const titleA = tabA.title ?? '';
+      const titleB = tabB.title ?? '';
+      return titleA < titleB ? -1 : titleA > titleB ? 1 : 0;
+    }),
+  }));
 }
 
 async function filterTabs(filter: TabFilterType, tabs: Tab[]): Promise<Tab[]> {
