@@ -7,6 +7,6 @@
     "default_popup": "pages/popup/index.html"
   },
   "permissions": ["tabs"],
-  "name": "tab-counter-ext",
+  "name": "Tab Counter",
   "manifest_version": 3
 }
