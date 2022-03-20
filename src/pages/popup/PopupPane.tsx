@@ -5,32 +5,23 @@ import {
   Tab,
   TabPanels,
   TabPanel,
-  Heading,
-  HStack,
-  IconButton,
   List,
-  Menu,
-  MenuButton,
-  MenuItemOption,
-  MenuList,
-  MenuOptionGroup,
-  Spacer,
-  Tag,
   Input,
   useBoolean,
   Divider,
-  TagProps,
+  Accordion,
+  AccordionItem,
+  AccordionPanel,
+  AccordionButton,
+  Flex,
+  AccordionIcon,
 } from '@chakra-ui/react';
-import React, { useState } from 'react';
-import { MdSort, MdSearch } from 'react-icons/md';
+import React, { useEffect, useState } from 'react';
 import { TabItem } from '../../components/tab/TabItem';
-import {
-  useFilteredTabs,
-  SortOrder,
-  TabFilterArg,
-} from '../../hooks/useFilteredTabs';
+import { useFilteredTabs } from '../../hooks/useFilteredTabs';
 import { useTabInfo } from '../../hooks/useTabInfo';
 import { getTabsStats, Tab as TabType } from '../../tabutil';
+import { TabGroupFilterSection } from './GroupFilterSection';
 
 export const PopupPane = () => {
   const { tabs, loading } = useTabInfo();
@@ -40,7 +31,7 @@ export const PopupPane = () => {
   const { all: allTabs, incognito: incogTabs, normal: normalTabs } = tabs;
 
   return (
-    <div style={{ width: '350px' }}>
+    <div style={{ width: '350px', maxWidth: '350px' }}>
       <Tabs>
         {loading && <Progress isIndeterminate />}
         <TabList>
@@ -67,89 +58,37 @@ export const PopupPane = () => {
   );
 };
 
-const FilterTag = ({
-  scheme,
-  currentFilter,
-  filter,
-  onChange,
-  children,
-}: React.PropsWithChildren<{
-  scheme: TagProps['colorScheme'];
-  currentFilter: TabFilterArg;
-  filter: TabFilterArg;
-  onChange: (filter: TabFilterArg) => void;
-}>) => {
-  return (
-    <Tag
-      colorScheme={currentFilter === filter ? scheme : 'gray'}
-      onClick={() => onChange(filter)}
-    >
-      {children}
-    </Tag>
-  );
-};
-
 const OpenTabGroup = ({ tabs }: { tabs: TabType[] }) => {
   const stats = getTabsStats(tabs);
   const [searchVisible, searchHandlers] = useBoolean(false);
   const [searchEntry, setSearchEntry] = useState('');
   const { filter, setFilter, setSortOrder, sortedDomains, sortOrder } =
     useFilteredTabs(tabs, searchEntry);
+  const [expandedSections, setExpandedSections] = useState<number[]>([]);
+
+  useEffect(() => {
+    if (filter === 'all') {
+      setExpandedSections([]);
+    } else {
+      const indexArray: number[] = [];
+      for (let i = 0; i < sortedDomains.length; i++) {
+        indexArray.push(i);
+      }
+
+      setExpandedSections(indexArray);
+    }
+  }, [filter]);
 
   return (
     <div>
-      <HStack spacing={2}>
-        <FilterTag
-          currentFilter={filter}
-          filter="audible"
-          scheme="green"
-          onChange={setFilter}
-        >
-          Audible{stats.audible.length ? ` (${stats.audible.length})` : ''}
-        </FilterTag>
-
-        <FilterTag
-          currentFilter={filter}
-          filter="currentwindow"
-          scheme="blue"
-          onChange={setFilter}
-        >
-          Current Window
-        </FilterTag>
-
-        <Spacer />
-
-        <IconButton
-          aria-label="Search tabs"
-          size="sm"
-          icon={<MdSearch />}
-          variant="outline"
-          onClick={searchHandlers.toggle}
-        />
-
-        <Menu closeOnSelect={false}>
-          <MenuButton
-            size="sm"
-            as={IconButton}
-            aria-label="Sort Order"
-            icon={<MdSort />}
-            variant="outline"
-          />
-
-          <MenuList>
-            <MenuOptionGroup
-              defaultValue="count"
-              type="radio"
-              value={sortOrder}
-              onChange={(choice) => setSortOrder(choice as SortOrder)}
-            >
-              <MenuItemOption value="count">Count</MenuItemOption>
-              <MenuItemOption value="asc">Ascending</MenuItemOption>
-              <MenuItemOption value="desc">Descending</MenuItemOption>
-            </MenuOptionGroup>
-          </MenuList>
-        </Menu>
-      </HStack>
+      <TabGroupFilterSection
+        filter={filter}
+        searchHandlers={searchHandlers}
+        setFilter={setFilter}
+        setSortOrder={setSortOrder}
+        sortOrder={sortOrder}
+        stats={stats}
+      />
 
       {searchVisible && (
         <Input
@@ -164,28 +103,35 @@ const OpenTabGroup = ({ tabs }: { tabs: TabType[] }) => {
         />
       )}
 
-      {sortedDomains.map(({ domain, tabs }, index) => (
-        <div key={domain}>
-          <DomainSection domain={domain} tabs={tabs} />
-          {index !== sortedDomains.length - 1 && <Divider />}
-        </div>
-      ))}
+      <Accordion
+        allowMultiple
+        allowToggle
+        mt={2}
+        index={expandedSections}
+        onChange={(index) => {
+          setExpandedSections(index as number[]);
+        }}
+      >
+        {sortedDomains.map(({ domain, tabs }) => (
+          <AccordionItem key={domain}>
+            <AccordionButton>
+              <Flex flex="1">{domain}</Flex>
+              <span>({tabs.length})</span>
+              <AccordionIcon pl={2} />
+            </AccordionButton>
+            <AccordionPanel pb={0}>
+              <BrowserTabList tabs={tabs} />
+            </AccordionPanel>
+          </AccordionItem>
+        ))}
+      </Accordion>
     </div>
   );
 };
 
-const DomainSection = ({
-  domain,
-  tabs,
-}: {
-  domain: string;
-  tabs: TabType[];
-}) => {
+const BrowserTabList = ({ tabs }: { tabs: TabType[] }) => {
   return (
     <div>
-      <Heading as="h3" size="sm">
-        {domain} ({tabs.length})
-      </Heading>
       <List spacing={1}>
         {tabs.map((tab, index) => (
           <div key={tab.id}>
