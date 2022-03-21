@@ -62,3 +62,8 @@ export async function focusTab(tab: Tab, switchToWindow: boolean = true) {
     });
   }
 }
+
+export async function moveTabToWindow(tab: Tab, window: chrome.windows.Window) {
+  await chrome.tabs.move(tab.id!, { index: -1, windowId: window.id! });
+  await focusTab(tab);
+}
