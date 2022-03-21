@@ -7,12 +7,44 @@ import {
   HStack,
   Badge,
   Text,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  useOutsideClick,
 } from '@chakra-ui/react';
-import React from 'react';
+import React, { useContext, useRef } from 'react';
 import { MdOpenInNew } from 'react-icons/md';
-import { focusTab, Tab } from '../../tabutil';
+import { useCurrentWindow } from '../../hooks/useCurrentWindow';
+import { focusTab, moveTabToWindow, Tab } from '../../tabutil';
+
+type TabItemMenuContextType = {
+  tab: Tab | null;
+  openTabMenu: (tab: Tab | null) => void;
+};
+
+export const TabItemMenuContext = React.createContext<TabItemMenuContextType>({
+  tab: null,
+  openTabMenu: () => {},
+});
 
 export const TabItem = ({ tab }: { tab: Tab }) => {
+  const currentWindow = useCurrentWindow();
+
+  const canMoveTabToWindow =
+    currentWindow?.incognito === tab.incognito &&
+    tab.windowId !== currentWindow?.id;
+  const canSwitchToTab = !tab.active || canMoveTabToWindow;
+
+  const menuContext = useContext(TabItemMenuContext);
+  const menuOpen = menuContext.tab === tab;
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useOutsideClick({
+    ref: menuRef,
+    handler: () => menuContext.openTabMenu(null),
+  });
+
   return (
     <VStack alignItems="start" py={1}>
       <Flex alignItems="center" w="full">
@@ -25,12 +57,38 @@ export const TabItem = ({ tab }: { tab: Tab }) => {
           </Text>
         </Box>
         <Spacer />
-        <IconButton
-          size="sm"
-          aria-label="Switch to tab"
-          icon={<MdOpenInNew />}
-          onClick={() => focusTab(tab)}
-        />
+        <Menu isOpen={menuOpen}>
+          <MenuButton
+            as={IconButton}
+            size="sm"
+            title="Switch to tab"
+            aria-label="Switch to tab"
+            icon={<MdOpenInNew />}
+            isDisabled={!canSwitchToTab}
+            onClick={() => focusTab(tab)}
+            onContextMenu={(e) => {
+              if (e.ctrlKey || !canSwitchToTab) return;
+              e.preventDefault();
+              menuContext.openTabMenu(tab);
+            }}
+          />
+          <MenuList ref={menuRef}>
+            <MenuItem
+              isDisabled={!canSwitchToTab}
+              onClick={() => focusTab(tab)}
+            >
+              Switch to tab
+            </MenuItem>
+            <MenuItem
+              isDisabled={!canMoveTabToWindow}
+              onClick={() =>
+                currentWindow && moveTabToWindow(tab, currentWindow)
+              }
+            >
+              Move tab to this window
+            </MenuItem>
+          </MenuList>
+        </Menu>
       </Flex>
 
       <HStack>

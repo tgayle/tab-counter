@@ -17,7 +17,7 @@ import {
   AccordionIcon,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
-import { TabItem } from '../../components/tab/TabItem';
+import { TabItem, TabItemMenuContext } from '../../components/tab/TabItem';
 import { useFilteredTabs } from '../../hooks/useFilteredTabs';
 import { useTabInfo } from '../../hooks/useTabInfo';
 import { getTabsStats, Tab as TabType } from '../../tabutil';
@@ -132,16 +132,25 @@ const OpenTabGroup = ({ tabs }: { tabs: TabType[] }) => {
 };
 
 const BrowserTabList = ({ tabs }: { tabs: TabType[] }) => {
+  const [focusedTabMenu, setFocusedTabMenu] = useState<TabType | null>(null);
+
   return (
     <div>
-      <List spacing={1}>
-        {tabs.map((tab, index) => (
-          <div key={tab.id}>
-            <TabItem tab={tab} />
-            {index !== tabs.length - 1 && <Divider />}
-          </div>
-        ))}
-      </List>
+      <TabItemMenuContext.Provider
+        value={{
+          tab: focusedTabMenu,
+          openTabMenu: (tab) => setFocusedTabMenu(tab),
+        }}
+      >
+        <List spacing={1}>
+          {tabs.map((tab, index) => (
+            <div key={tab.id}>
+              <TabItem tab={tab} />
+              {index !== tabs.length - 1 && <Divider />}
+            </div>
+          ))}
+        </List>
+      </TabItemMenuContext.Provider>
     </div>
   );
 };
