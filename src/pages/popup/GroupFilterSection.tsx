@@ -10,6 +10,7 @@ import {
   Spacer,
   Tag,
   TagProps,
+  Box,
 } from '@chakra-ui/react';
 import React from 'react';
 import { MdSearch, MdSort } from 'react-icons/md';
@@ -63,28 +64,30 @@ export function TabGroupFilterSection({
         onClick={searchHandlers.toggle}
       />
 
-      <Menu closeOnSelect={false}>
-        <MenuButton
-          size="sm"
-          as={IconButton}
-          aria-label="Sort Order"
-          icon={<MdSort />}
-          variant="outline"
-        />
+      <Box>
+        <Menu closeOnSelect={false}>
+          <MenuButton
+            size="sm"
+            as={IconButton}
+            aria-label="Sort Order"
+            icon={<MdSort />}
+            variant="outline"
+          />
 
-        <MenuList>
-          <MenuOptionGroup
-            defaultValue="count"
-            type="radio"
-            value={sortOrder}
-            onChange={(choice) => setSortOrder(choice as SortOrder)}
-          >
-            <MenuItemOption value={SortOrder.Count}>Count</MenuItemOption>
-            <MenuItemOption value={SortOrder.Asc}>Ascending</MenuItemOption>
-            <MenuItemOption value={SortOrder.Desc}>Descending</MenuItemOption>
-          </MenuOptionGroup>
-        </MenuList>
-      </Menu>
+          <MenuList>
+            <MenuOptionGroup
+              defaultValue="count"
+              type="radio"
+              value={sortOrder}
+              onChange={(choice) => setSortOrder(choice as SortOrder)}
+            >
+              <MenuItemOption value={SortOrder.Count}>Count</MenuItemOption>
+              <MenuItemOption value={SortOrder.Asc}>Ascending</MenuItemOption>
+              <MenuItemOption value={SortOrder.Desc}>Descending</MenuItemOption>
+            </MenuOptionGroup>
+          </MenuList>
+        </Menu>
+      </Box>
     </HStack>
   );
 }
