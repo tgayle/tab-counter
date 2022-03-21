@@ -34,7 +34,7 @@ export const TabItem = ({ tab }: { tab: Tab }) => {
   const canMoveTabToWindow =
     currentWindow?.incognito === tab.incognito &&
     tab.windowId !== currentWindow?.id;
-  const canSwitchToTab = !tab.active || canMoveTabToWindow;
+  const canSwitchToTab = !(tab.active && tab.windowId === currentWindow?.id);
 
   const menuContext = useContext(TabItemMenuContext);
   const menuOpen = menuContext.tab === tab;
