@@ -1,12 +1,15 @@
 {
+  "$schema": "https://json.schemastore.org/chrome-manifest",
+  "name": "Tab Counter",
+  "description": "Keeps count of your open tabs and windows.",
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "permissions": ["tabs"],
   "background": {
     "service_worker": "background.ts",
     "type": "module"
   },
   "action": {
     "default_popup": "pages/popup/index.html"
-  },
-  "permissions": ["tabs"],
-  "name": "Tab Counter",
-  "manifest_version": 3
+  }
 }
