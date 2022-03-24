@@ -1,4 +1,5 @@
 export type Tab = chrome.tabs.Tab;
+export type BrowserWindow = chrome.windows.Window;
 
 export type TabInfo = {
   text: string;
