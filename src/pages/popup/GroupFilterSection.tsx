@@ -14,33 +14,42 @@ import {
 } from '@chakra-ui/react';
 import React from 'react';
 import { MdSearch, MdSort } from 'react-icons/md';
-import { TabFilterType, SortOrder } from '../../hooks/useFilteredTabs';
+import {
+  TabFilterType,
+  GroupTabsByOptions,
+  GroupSortOrder,
+  useFilterSettings,
+} from '../../hooks/useFilterSettings';
 import { TabStats } from '../../tabutil';
 
 type UseBooleanResult = ReturnType<typeof useBoolean>[1];
 
-export function TabGroupFilterSection({
-  filter,
-  searchHandlers,
-  setFilter,
-  setSortOrder,
-  sortOrder,
-  stats,
-}: {
-  filter: TabFilterType;
-  setFilter: (newFilter: TabFilterType) => void;
+type Props = {
   stats: TabStats;
   searchHandlers: UseBooleanResult;
-  sortOrder: string;
-  setSortOrder: (order: SortOrder) => void;
-}) {
+};
+
+export function TabGroupFilterSection({ searchHandlers, stats }: Props) {
+  const {
+    setTabFilterType: _setTabFilterType,
+    setTabGrouping,
+    groupSortBy,
+    setGroupSortBy,
+    tabGrouping,
+    tabFilterType: filter,
+  } = useFilterSettings();
+
+  const setTabFilterType = (newFilter: TabFilterType) => {
+    _setTabFilterType(filter === newFilter ? TabFilterType.All : newFilter);
+  };
+
   return (
     <HStack spacing={2}>
       <FilterTag
         currentFilter={filter}
         filter={TabFilterType.Audible}
         scheme="green"
-        onChange={setFilter}
+        onChange={setTabFilterType}
       >
         Audible{stats.audible.length ? ` (${stats.audible.length})` : ''}
       </FilterTag>
@@ -49,7 +58,7 @@ export function TabGroupFilterSection({
         currentFilter={filter}
         filter={TabFilterType.CurrentWindow}
         scheme="blue"
-        onChange={setFilter}
+        onChange={setTabFilterType}
       >
         Current Window
       </FilterTag>
@@ -77,14 +86,34 @@ export function TabGroupFilterSection({
           <MenuList>
             <MenuOptionGroup
               defaultValue="count"
+              title="Order"
               type="radio"
-              value={sortOrder}
-              onChange={(choice) => setSortOrder(choice as SortOrder)}
+              value={groupSortBy}
+              onChange={(choice) => setGroupSortBy(choice as GroupSortOrder)}
             >
-              <MenuItemOption value={SortOrder.Count}>Count</MenuItemOption>
-              <MenuItemOption value={SortOrder.Asc}>Ascending</MenuItemOption>
-              <MenuItemOption value={SortOrder.Desc}>Descending</MenuItemOption>
+              <MenuItemOption value={GroupSortOrder.Count}>
+                Count
+              </MenuItemOption>
+              <MenuItemOption value={GroupSortOrder.Asc}>
+                Ascending
+              </MenuItemOption>
+              <MenuItemOption value={GroupSortOrder.Desc}>
+                Descending
+              </MenuItemOption>
             </MenuOptionGroup>
+
+            {
+              <MenuOptionGroup
+                title="Group by"
+                onChange={(option) =>
+                  setTabGrouping(option as GroupTabsByOptions)
+                }
+                value={tabGrouping}
+              >
+                <MenuItemOption value="domain">Domain</MenuItemOption>
+                <MenuItemOption value="window">Window</MenuItemOption>
+              </MenuOptionGroup>
+            }
           </MenuList>
         </Menu>
       </Box>

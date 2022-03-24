@@ -62,35 +62,30 @@ const OpenTabGroup = ({ tabs }: { tabs: TabType[] }) => {
   const stats = getTabsStats(tabs);
   const [searchVisible, searchHandlers] = useBoolean(false);
   const [searchEntry, setSearchEntry] = useState('');
-  const { filter, setFilter, setSortOrder, sortedDomains, sortOrder } =
-    useFilteredTabs(tabs, searchEntry);
+  const { groupedTabs: groups, sortOptions } = useFilteredTabs(
+    tabs,
+    searchEntry,
+  );
   const [expandedSections, setExpandedSections] = useState<number[]>([]);
 
   useEffect(() => {
-    if (filter === 'all' && !searchEntry) {
+    if (sortOptions.tabFilterType === 'all' && !searchEntry) {
       setExpandedSections([]);
     } else {
       const indexArray: number[] = [];
-      for (let i = 0; i < sortedDomains.length; i++) {
+      for (let i = 0; i < groups.filteredTabs.length; i++) {
         indexArray.push(i);
       }
 
       setExpandedSections(indexArray);
     }
-  }, [filter, searchEntry]);
+  }, [sortOptions.tabFilterType, searchEntry]);
 
   useEffect(() => setSearchEntry(''), [searchVisible]);
 
   return (
     <div>
-      <TabGroupFilterSection
-        filter={filter}
-        searchHandlers={searchHandlers}
-        setFilter={setFilter}
-        setSortOrder={setSortOrder}
-        sortOrder={sortOrder}
-        stats={stats}
-      />
+      <TabGroupFilterSection searchHandlers={searchHandlers} stats={stats} />
 
       {searchVisible && (
         <Input
@@ -114,20 +109,42 @@ const OpenTabGroup = ({ tabs }: { tabs: TabType[] }) => {
           setExpandedSections(index as number[]);
         }}
       >
-        {sortedDomains.map(({ domain, tabs }) => (
-          <AccordionItem key={domain}>
-            <AccordionButton>
-              <Flex flex="1">{domain}</Flex>
-              <span>({tabs.length})</span>
-              <AccordionIcon ml={2} />
-            </AccordionButton>
-            <AccordionPanel pb={0}>
-              <BrowserTabList tabs={tabs} />
-            </AccordionPanel>
-          </AccordionItem>
-        ))}
+        {groups.grouping === 'domain'
+          ? groups.filteredTabs.map(({ domain, tabs }) => (
+              <GroupAccordionItem title={domain} tabs={tabs} key={domain} />
+            ))
+          : groups.grouping === 'window'
+          ? groups.filteredTabs.map(({ window, tabs }) => (
+              <GroupAccordionItem
+                title={`#${window.id}`}
+                tabs={tabs}
+                key={window.id}
+              />
+            ))
+          : null}
       </Accordion>
     </div>
+  );
+};
+
+const GroupAccordionItem = ({
+  title,
+  tabs,
+}: {
+  title: string;
+  tabs: TabType[];
+}) => {
+  return (
+    <AccordionItem>
+      <AccordionButton>
+        <Flex flex="1">{title}</Flex>
+        <span>({tabs.length})</span>
+        <AccordionIcon ml={2} />
+      </AccordionButton>
+      <AccordionPanel pb={0}>
+        <BrowserTabList tabs={tabs} />
+      </AccordionPanel>
+    </AccordionItem>
   );
 };
 
