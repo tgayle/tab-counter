@@ -3,12 +3,12 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "jsx": "react",
-    "lib": ["dom", "es2019"],
+    "lib": ["dom", "ESNext"],
     "module": "ESNext",
     "moduleResolution": "node",
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "strict": true,
-    "target": "es2018"
+    "target": "ESNext"
   }
 }
