@@ -1,9 +1,7 @@
 import React from 'react';
-import { render } from 'react-dom';
 import App from './App';
+import { createRoot } from 'react-dom/client';
 
 console.log('popup script');
-
 const root = document.querySelector('#root');
-
-render(<App />, root);
+createRoot(root!).render(<App />);
