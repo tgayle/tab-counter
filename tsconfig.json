@@ -9,6 +9,6 @@
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "strict": true,
-    "target": "ESNext"
+    "target": "ES2018"
   }
 }
