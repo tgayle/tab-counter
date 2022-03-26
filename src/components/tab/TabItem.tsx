@@ -15,8 +15,7 @@ import {
 } from '@chakra-ui/react';
 import React, { useContext, useRef } from 'react';
 import { MdOpenInNew } from 'react-icons/md';
-import { useCurrentWindow } from '../../hooks/useCurrentWindow';
-import { focusTab, moveTabToWindow, Tab } from '../../tabutil';
+import { BrowserWindow, focusTab, moveTabToWindow, Tab } from '../../tabutil';
 
 type TabItemMenuContextType = {
   tab: Tab | null;
@@ -28,9 +27,13 @@ export const TabItemMenuContext = React.createContext<TabItemMenuContextType>({
   openTabMenu: () => {},
 });
 
-export const TabItem = ({ tab }: { tab: Tab }) => {
-  const currentWindow = useCurrentWindow();
-
+export const TabItem = ({
+  tab,
+  currentWindow,
+}: {
+  tab: Tab;
+  currentWindow: BrowserWindow | null;
+}) => {
   const canMoveTabToWindow =
     currentWindow?.incognito === tab.incognito &&
     tab.windowId !== currentWindow?.id;

@@ -150,6 +150,7 @@ const GroupAccordionItem = ({
 
 const BrowserTabList = ({ tabs }: { tabs: TabType[] }) => {
   const [focusedTabMenu, setFocusedTabMenu] = useState<TabType | null>(null);
+  const currentWindow = useCurrentWindow();
 
   return (
     <div>
@@ -162,7 +163,7 @@ const BrowserTabList = ({ tabs }: { tabs: TabType[] }) => {
         <List spacing={1}>
           {tabs.map((tab, index) => (
             <div key={tab.id}>
-              <TabItem tab={tab} />
+              <TabItem tab={tab} currentWindow={currentWindow} />
               {index !== tabs.length - 1 && <Divider />}
             </div>
           ))}
