@@ -18,6 +18,7 @@ import {
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import { TabItem, TabItemMenuContext } from '../../components/tab/TabItem';
+import { useCurrentWindow } from '../../hooks/useCurrentWindow';
 import { useFilteredTabs } from '../../hooks/useFilteredTabs';
 import { useTabInfo } from '../../hooks/useTabInfo';
 import { getTabsStats, Tab as TabType } from '../../tabutil';
@@ -136,14 +137,18 @@ const GroupAccordionItem = ({
 }) => {
   return (
     <AccordionItem>
-      <AccordionButton>
-        <Flex flex="1">{title}</Flex>
-        <span>({tabs.length})</span>
-        <AccordionIcon ml={2} />
-      </AccordionButton>
-      <AccordionPanel pb={0}>
-        <BrowserTabList tabs={tabs} />
-      </AccordionPanel>
+      {({ isExpanded }) => (
+        <>
+          <AccordionButton>
+            <Flex flex="1">{title}</Flex>
+            <span>({tabs.length})</span>
+            <AccordionIcon ml={2} />
+          </AccordionButton>
+          <AccordionPanel pb={0}>
+            {isExpanded && <BrowserTabList tabs={tabs} />}
+          </AccordionPanel>
+        </>
+      )}
     </AccordionItem>
   );
 };
