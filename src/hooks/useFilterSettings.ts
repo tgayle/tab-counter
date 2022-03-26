@@ -1,26 +1,17 @@
 import { useEffect, useState } from 'react';
+import {
+  TabFilterType,
+  GroupTabsByOptions,
+  GroupSortOrder,
+  TabSortOrder,
+} from '../action/TabFilter';
 
-export enum TabFilterType {
-  Audible = 'audible',
-  All = 'all',
-  CurrentWindow = 'currentWindow',
-}
-
-export enum GroupSortOrder {
-  Count = 'count',
-  Asc = 'asc',
-  Desc = 'desc',
-}
-
-export enum GroupTabsByOptions {
-  Domain = 'domain',
-  Window = 'window',
-}
-
-export enum TabSortOrder {
-  Asc = 'asc',
-  Desc = 'desc',
-}
+export {
+  TabFilterType,
+  GroupTabsByOptions,
+  GroupSortOrder,
+  TabSortOrder,
+} from '../action/TabFilter';
 
 export type FilterSettings = {
   tabFilterType: TabFilterType;
