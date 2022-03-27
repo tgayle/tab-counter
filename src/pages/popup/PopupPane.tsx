@@ -2,6 +2,7 @@ import {
   Tabs,
   Progress,
   TabList,
+  Text,
   Tab,
   TabPanels,
   TabPanel,
@@ -13,7 +14,6 @@ import {
   AccordionItem,
   AccordionPanel,
   AccordionButton,
-  Flex,
   AccordionIcon,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
@@ -140,7 +140,9 @@ const GroupAccordionItem = ({
       {({ isExpanded }) => (
         <>
           <AccordionButton>
-            <Flex flex="1">{title}</Flex>
+            <Text flex={1} noOfLines={1} title={title} textAlign="start">
+              {title}
+            </Text>
             <span>({tabs.length})</span>
             <AccordionIcon ml={2} />
           </AccordionButton>
