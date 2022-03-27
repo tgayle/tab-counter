@@ -76,6 +76,8 @@ function getDisplayOriginForUrl(url: URL) {
     return 'Files';
   } else if (origin === 'chrome://newtab') {
     return 'New Tabs';
+  } else if (url.protocol.startsWith('chrome-extension')) {
+    return `Extension: ${url.host}`;
   } else {
     return url.host;
   }
