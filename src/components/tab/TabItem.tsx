@@ -14,7 +14,7 @@ import {
   useOutsideClick,
   useToast,
 } from '@chakra-ui/react';
-import React, { useContext, useRef } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import { MdOpenInNew } from 'react-icons/md';
 import {
   BrowserWindow,
@@ -48,11 +48,18 @@ export const TabItem = ({
     tab.incognito;
   const canSwitchToTab = !(tab.active && tab.windowId === currentWindow?.id);
   const toast = useToast({ position: 'bottom' });
+  const toastIds = useRef<(number | string | undefined)[]>([]);
   const buttonEnabled = canSwitchToTab || canMoveTabToWindow;
 
   const menuContext = useContext(TabItemMenuContext);
   const menuOpen = menuContext.tab === tab;
   const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    return () => {
+      toastIds.current.forEach((id) => id && toast.close(id));
+    };
+  }, []);
 
   useOutsideClick({
     ref: menuRef,
@@ -119,10 +126,12 @@ export const TabItem = ({
                   closeTab(tab);
                 } else {
                   event.preventDefault();
-                  toast({
-                    description: 'Hold Ctrl to delete.',
-                    duration: 2000,
-                  });
+                  toastIds.current.push(
+                    toast({
+                      description: 'Hold Ctrl to delete.',
+                      duration: 2000,
+                    }),
+                  );
                 }
               }}
             >

@@ -80,6 +80,7 @@ export function useFilteredTabs(
     sortOptions.tabFilterType,
     sortOptions.tabGrouping,
     sortOptions.tabSortBy,
+    tabs,
   ]);
 
   return {
