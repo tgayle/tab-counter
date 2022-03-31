@@ -75,3 +75,34 @@ export async function moveTabToWindow(
     await focusTab(tab);
   }
 }
+
+export async function getCurrentWindow() {
+  return await chrome.windows.getCurrent();
+}
+
+export async function reopenIncognitoTab(tab: Tab) {
+  const currentWindow = await getCurrentWindow();
+  const normalWindow = !currentWindow.incognito
+    ? currentWindow
+    : (await chrome.windows.getAll()).find((window) => !window.incognito);
+
+  if (!normalWindow) {
+    await chrome.windows.create({
+      focused: true,
+      incognito: false,
+      url: tab.url,
+    });
+  } else {
+    await chrome.tabs.create({
+      url: tab.url,
+      active: true,
+      windowId: normalWindow.id,
+    });
+  }
+
+  await chrome.tabs.remove(tab.id!);
+}
+
+export async function closeTab(tab: Tab) {
+  await chrome.tabs.remove(tab.id!);
+}

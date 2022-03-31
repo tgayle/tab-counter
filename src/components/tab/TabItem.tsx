@@ -12,10 +12,18 @@ import {
   MenuList,
   MenuItem,
   useOutsideClick,
+  useToast,
 } from '@chakra-ui/react';
 import React, { useContext, useRef } from 'react';
 import { MdOpenInNew } from 'react-icons/md';
-import { BrowserWindow, focusTab, moveTabToWindow, Tab } from '../../tabutil';
+import {
+  BrowserWindow,
+  closeTab,
+  focusTab,
+  moveTabToWindow,
+  reopenIncognitoTab,
+  Tab,
+} from '../../tabutil';
 
 type TabItemMenuContextType = {
   tab: Tab | null;
@@ -35,9 +43,12 @@ export const TabItem = ({
   currentWindow: BrowserWindow | null;
 }) => {
   const canMoveTabToWindow =
-    currentWindow?.incognito === tab.incognito &&
-    tab.windowId !== currentWindow?.id;
+    (currentWindow?.incognito === tab.incognito &&
+      tab.windowId !== currentWindow?.id) ||
+    tab.incognito;
   const canSwitchToTab = !(tab.active && tab.windowId === currentWindow?.id);
+  const toast = useToast({ position: 'bottom' });
+  const buttonEnabled = canSwitchToTab || canMoveTabToWindow;
 
   const menuContext = useContext(TabItemMenuContext);
   const menuOpen = menuContext.tab === tab;
@@ -67,10 +78,17 @@ export const TabItem = ({
             title="Switch to tab"
             aria-label="Switch to tab"
             icon={<MdOpenInNew />}
-            isDisabled={!canSwitchToTab}
-            onClick={() => focusTab(tab)}
+            isDisabled={!buttonEnabled}
+            onClick={(e) => {
+              if (tab.active && tab.windowId === currentWindow?.id) {
+                e.preventDefault();
+                menuContext.openTabMenu(tab);
+              } else {
+                focusTab(tab);
+              }
+            }}
             onContextMenu={(e) => {
-              if (e.ctrlKey || !canSwitchToTab) return;
+              if (e.ctrlKey || !buttonEnabled) return;
               e.preventDefault();
               menuContext.openTabMenu(tab);
             }}
@@ -89,6 +107,26 @@ export const TabItem = ({
               }
             >
               Move tab to this window
+            </MenuItem>
+            {tab.incognito && (
+              <MenuItem onClick={() => reopenIncognitoTab(tab)}>
+                Reopen in normal window
+              </MenuItem>
+            )}
+            <MenuItem
+              onClick={(event) => {
+                if (event.ctrlKey) {
+                  closeTab(tab);
+                } else {
+                  event.preventDefault();
+                  toast({
+                    description: 'Hold Ctrl to delete.',
+                    duration: 2000,
+                  });
+                }
+              }}
+            >
+              Close
             </MenuItem>
           </MenuList>
         </Menu>
