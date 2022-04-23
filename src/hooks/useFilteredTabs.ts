@@ -1,8 +1,5 @@
 import { useState, useEffect } from 'react';
-import {
-  TabFilterProcessor,
-  TabUpdateListener,
-} from '../action/TabFilterProcessor';
+import { TabFilterProcessor } from '../action/TabFilterProcessor';
 import { Tab, BrowserWindow } from '../tabutil';
 import { useFilterSettings, FilterSettings } from './useFilterSettings';
 
@@ -49,30 +46,30 @@ export function useFilteredTabs(
     if (!loaded) {
       return;
     }
-    setLoading(true);
 
-    const processor = new TabFilterProcessor({
-      grouping: {
-        sortBy: groupSortBy,
-        groupBy: tabGrouping,
-      },
-      query: searchQuery,
-      tabs: {
-        sortBy: tabSortBy,
-        type: tabFilterType,
-      },
-    });
+    (async () => {
+      setLoading(true);
+      if (await TabFilterProcessor.viaIpc.isLoading()) {
+        return;
+      }
+      await TabFilterProcessor.viaIpc.setFilters({
+        grouping: {
+          sortBy: groupSortBy,
+          groupBy: tabGrouping,
+        },
+        query: searchQuery,
+        tabs: {
+          sortBy: tabSortBy,
+          type: tabFilterType,
+        },
+      });
 
-    processor.tabs = tabs;
-
-    const listener: TabUpdateListener = (result) => {
-      setGroupedTabs(result);
+      await TabFilterProcessor.viaIpc.setTabs(tabs);
+      const res = await TabFilterProcessor.viaIpc.submit();
+      console.log('received result', res);
+      setGroupedTabs(res);
       setLoading(false);
-    };
-    processor.addListener(listener);
-    processor.update();
-
-    return () => processor.removeListener(listener);
+    })();
   }, [
     searchQuery,
     sortOptions.loaded,

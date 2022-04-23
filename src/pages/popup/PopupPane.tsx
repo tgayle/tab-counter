@@ -19,6 +19,7 @@ import {
 import React, { useEffect, useState } from 'react';
 import { TabItem, TabItemMenuContext } from '../../components/tab/TabItem';
 import { useCurrentWindow } from '../../hooks/useCurrentWindow';
+import { useDebounce } from '../../hooks/useDebounce';
 import { useFilteredTabs } from '../../hooks/useFilteredTabs';
 import { useTabInfo } from '../../hooks/useTabInfo';
 import { getTabsStats, Tab as TabType } from '../../tabutil';
@@ -27,13 +28,27 @@ import { TabGroupFilterSection } from './GroupFilterSection';
 export const PopupPane = () => {
   const { tabs, loading } = useTabInfo();
 
+  const [initialSearchQuery, setInitialQuery] = useState('');
+
+  useEffect(() => {
+    const cb = (msg: { search: string }) => {
+      if ('search' in msg) {
+        setInitialQuery(msg.search);
+        console.log('Received remote search request!', msg);
+      }
+    };
+
+    chrome.runtime.onMessage.addListener(cb);
+    return () => chrome.runtime.onMessage.removeListener(cb);
+  }, []);
+
   if (loading) return null;
 
   const { all: allTabs, incognito: incogTabs, normal: normalTabs } = tabs;
 
   return (
     <div style={{ width: '350px', maxWidth: '350px' }}>
-      <Tabs>
+      <Tabs isLazy>
         {loading && <Progress isIndeterminate />}
         <TabList>
           <Tab>All ({allTabs.length})</Tab>
@@ -45,13 +60,13 @@ export const PopupPane = () => {
 
         <TabPanels>
           <TabPanel>
-            <OpenTabGroup tabs={allTabs} />
+            <OpenTabGroup tabs={allTabs} searchQuery={initialSearchQuery} />
           </TabPanel>
           <TabPanel>
-            <OpenTabGroup tabs={normalTabs} />
+            <OpenTabGroup tabs={normalTabs} searchQuery={initialSearchQuery} />
           </TabPanel>
           <TabPanel>
-            <OpenTabGroup tabs={incogTabs} />
+            <OpenTabGroup tabs={incogTabs} searchQuery={initialSearchQuery} />
           </TabPanel>
         </TabPanels>
       </Tabs>
@@ -59,30 +74,35 @@ export const PopupPane = () => {
   );
 };
 
-const OpenTabGroup = ({ tabs }: { tabs: TabType[] }) => {
+const OpenTabGroup = ({
+  tabs,
+  searchQuery,
+}: {
+  tabs: TabType[];
+  searchQuery?: string;
+}) => {
   const stats = getTabsStats(tabs);
-  const [searchVisible, searchHandlers] = useBoolean(false);
-  const [searchEntry, setSearchEntry] = useState('');
-  const { groupedTabs: groups, sortOptions } = useFilteredTabs(
-    tabs,
-    searchEntry,
-  );
+  const [searchVisible, searchHandlers] = useBoolean(!!searchQuery);
+  const [searchEntry, setSearchEntry] = useState(searchQuery ?? '');
+  const debouncedQuery = useDebounce(searchEntry, 150);
+  const {
+    groupedTabs: groups,
+    sortOptions,
+    loading,
+  } = useFilteredTabs(tabs, debouncedQuery);
   const [expandedSections, setExpandedSections] = useState<number[]>([]);
 
   useEffect(() => {
-    if (sortOptions.tabFilterType === 'all' && !searchEntry) {
+    if (loading || (sortOptions.tabFilterType === 'all' && !debouncedQuery)) {
       setExpandedSections([]);
-    } else {
-      const indexArray: number[] = [];
-      for (let i = 0; i < groups.filteredTabs.length; i++) {
-        indexArray.push(i);
-      }
-
-      setExpandedSections(indexArray);
     }
-  }, [sortOptions.tabFilterType, searchEntry]);
+  }, [sortOptions.tabFilterType, debouncedQuery]);
 
-  useEffect(() => setSearchEntry(''), [searchVisible]);
+  useEffect(() => {
+    if (!searchVisible) {
+      setSearchEntry('');
+    }
+  }, [searchVisible]);
 
   return (
     <div>

@@ -146,7 +146,63 @@ export class TabFilterProcessor {
       grouping: 'window',
     };
   };
+
+  static readonly viaIpc = {
+    isLoading() {
+      const msg: IPCMessages['msg'] = {
+        data: null,
+        type: 'isLoading',
+      };
+      return new Promise<boolean>((res) =>
+        chrome.runtime.sendMessage(msg, res),
+      );
+    },
+    setFilters(filters: Filters) {
+      const msg: IPCMessages['msg'] = {
+        data: filters,
+        type: 'setFilters',
+      };
+      return new Promise<void>((res) => chrome.runtime.sendMessage(msg, res));
+    },
+    setTabs(tabs: Tab[]) {
+      const msg: IPCMessages['msg'] = {
+        data: tabs,
+        type: 'setTabs',
+      };
+      return new Promise<void>((res) => chrome.runtime.sendMessage(msg, res));
+    },
+    submit() {
+      const msg: IPCMessages['msg'] = {
+        data: null,
+        type: 'submit',
+      };
+      type R = Extract<
+        IPCMessages,
+        {
+          msg: {
+            type: 'submit';
+          };
+        }
+      >['res'];
+      return new Promise<R>((res) => chrome.runtime.sendMessage(msg, res));
+    },
+  };
 }
+
+type BaseIPCMessage<T extends string, I, R> = {
+  res: R;
+  key: T;
+  msg: {
+    type: T;
+    data: I;
+  };
+};
+
+export type IPCMessages =
+  | BaseIPCMessage<'setFilters', Filters, null>
+  | BaseIPCMessage<'setTabs', Tab[], null>
+  | BaseIPCMessage<'isLoading', null, boolean>
+  | BaseIPCMessage<'submit', null, GroupedTabType>;
 
 export function profile<T = void>(name: string, action: () => T): T {
   const start = performance.now();
