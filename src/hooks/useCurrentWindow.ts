@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BrowserWindow } from '../tabutil';
+import { BrowserWindow, getCurrentWindow } from '../tabutil';
 
 export function useCurrentWindow() {
   const [window, setWindow] = useState<BrowserWindow | null>(null);
@@ -7,7 +7,7 @@ export function useCurrentWindow() {
   useEffect(() => {
     let active = true;
     (async () => {
-      const currentWindow = await chrome.windows.getCurrent();
+      const currentWindow = await getCurrentWindow();
       if (!active) return;
       setWindow(currentWindow);
     })();

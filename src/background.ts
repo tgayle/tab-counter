@@ -11,7 +11,7 @@ import {
 } from './action/TabFilterProcessor';
 import { setupDupeLinkMenu } from './contextmenu/listDuplicateLinks';
 import { updateTabContextMenu } from './contextmenu/listDuplicateTabs';
-import { getCurrentTab, getTabInfo } from './tabutil';
+import { getCurrentTab, getTabInfo, setCurrentWindow } from './tabutil';
 
 async function updateCount() {
   await chrome.action.setBadgeText({
@@ -51,6 +51,7 @@ function main() {
         result: Extract<IPCMessages, { msg: { type: T } }>['res'],
       ) => void,
     ) => {
+      setCurrentWindow(msg.windowId!);
       const respond = (res: any) => {
         console.log('Responding to message', msg, 'with result', res);
         _respond(res);

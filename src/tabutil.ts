@@ -55,7 +55,7 @@ export function getTabsStats(tabs: Tab[]): TabStats {
 }
 
 export async function focusTab(tab: Tab, switchToWindow: boolean = true) {
-  const currentWindow = await chrome.windows.getCurrent();
+  const currentWindow = await getCurrentWindow();
   await chrome.tabs.update(tab.id!, { active: true });
   if (switchToWindow && currentWindow.id !== tab.windowId) {
     await chrome.windows.update(tab.windowId, {
@@ -76,8 +76,20 @@ export async function moveTabToWindow(
   }
 }
 
+let currentWindowId: number | null = null;
+
+export function setCurrentWindow(id: number | null) {
+  if (typeof window !== 'undefined')
+    throw new Error('dont call this from popup context.');
+  currentWindowId = id;
+}
+
 export async function getCurrentWindow() {
-  return await chrome.windows.getCurrent();
+  if (typeof window !== 'undefined') {
+    return await chrome.windows.getCurrent();
+  }
+
+  return await chrome.windows.get(currentWindowId!);
 }
 
 export async function getCurrentTab() {

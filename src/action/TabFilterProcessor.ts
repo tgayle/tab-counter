@@ -1,5 +1,5 @@
 import { GroupedTabType } from '../hooks/useFilteredTabs';
-import { Tab } from '../tabutil';
+import { getCurrentWindow, Tab } from '../tabutil';
 import {
   GroupSortOrder,
   GroupTabsByOptions,
@@ -153,23 +153,21 @@ export class TabFilterProcessor {
         data: null,
         type: 'isLoading',
       };
-      return new Promise<boolean>((res) =>
-        chrome.runtime.sendMessage(msg, res),
-      );
+      return sendIpc<boolean>(msg);
     },
     setFilters(filters: Filters) {
       const msg: IPCMessages['msg'] = {
         data: filters,
         type: 'setFilters',
       };
-      return new Promise<void>((res) => chrome.runtime.sendMessage(msg, res));
+      return sendIpc(msg);
     },
     setTabs(tabs: Tab[]) {
       const msg: IPCMessages['msg'] = {
         data: tabs,
         type: 'setTabs',
       };
-      return new Promise<void>((res) => chrome.runtime.sendMessage(msg, res));
+      return sendIpc(msg);
     },
     submit() {
       const msg: IPCMessages['msg'] = {
@@ -184,9 +182,21 @@ export class TabFilterProcessor {
           };
         }
       >['res'];
-      return new Promise<R>((res) => chrome.runtime.sendMessage(msg, res));
+      return sendIpc<R>(msg);
     },
   };
+}
+
+function sendIpc<R>(msg: BaseIPCMessage<string, any, any>['msg']) {
+  return new Promise<R>(async (res) =>
+    chrome.runtime.sendMessage(
+      {
+        ...msg,
+        windowId: (await getCurrentWindow()).id,
+      },
+      res,
+    ),
+  );
 }
 
 type BaseIPCMessage<T extends string, I, R> = {
@@ -194,6 +204,7 @@ type BaseIPCMessage<T extends string, I, R> = {
   key: T;
   msg: {
     type: T;
+    windowId?: number;
     data: I;
   };
 };

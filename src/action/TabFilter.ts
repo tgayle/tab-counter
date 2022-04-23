@@ -1,4 +1,4 @@
-import { BrowserWindow, getTabInfo, Tab } from '../tabutil';
+import { BrowserWindow, getCurrentWindow, getTabInfo, Tab } from '../tabutil';
 
 export enum TabFilterType {
   Audible = 'audible',
@@ -42,7 +42,7 @@ export async function filterTabs(
     case TabFilterType.Audible:
       return tabs.filter((tab) => tab.audible);
     case TabFilterType.CurrentWindow: {
-      const currentWindow = await chrome.windows.getCurrent();
+      const currentWindow = await getCurrentWindow();
       return tabs.filter((tab) => tab.windowId === currentWindow.id);
     }
     case TabFilterType.Duplicates: {
@@ -171,8 +171,6 @@ export function filterDuplicateTabs(
   seen = new Set<Tab>(),
 ): Tab[] {
   const fullUrl = sourceUrl.origin + sourceUrl.pathname;
-
-  console.log('Seeking duplicates for', fullUrl, 'from list', tabs);
 
   const dupes = tabs.filter(({ tab, url: tabUrl }) => {
     if (seen.has(tab)) return false;
