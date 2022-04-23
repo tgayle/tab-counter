@@ -29,7 +29,7 @@
     "@rollup/plugin-commonjs": "^17.0.0",
     "@rollup/plugin-node-resolve": "^11.0.1",
     "@rollup/plugin-typescript": "^8.1.0",
-    "@types/chrome": "^0.0.179",
+    "@types/chrome": "~0.0.181",
     "@types/eslint": "^7.29.0",
     "@types/jest": "^26.0.19",
     "@types/prettier": "^2.4.4",
