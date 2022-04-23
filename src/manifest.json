@@ -4,7 +4,7 @@
   "description": "Keeps count of your open tabs and windows.",
   "manifest_version": 3,
   "version": "1.0.0",
-  "permissions": ["tabs", "storage"],
+  "permissions": ["tabs", "storage", "contextMenus"],
   "background": {
     "service_worker": "background.ts",
     "type": "module"
