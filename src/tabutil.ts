@@ -80,6 +80,10 @@ export async function getCurrentWindow() {
   return await chrome.windows.getCurrent();
 }
 
+export async function getCurrentTab() {
+  return (await chrome.tabs.query({ active: true, currentWindow: true }))[0];
+}
+
 export async function reopenIncognitoTab(tab: Tab) {
   const currentWindow = await getCurrentWindow();
   const normalWindow = !currentWindow.incognito
@@ -105,4 +109,21 @@ export async function reopenIncognitoTab(tab: Tab) {
 
 export async function closeTab(tab: Tab) {
   await chrome.tabs.remove(tab.id!);
+}
+
+export async function findDuplicateTabs(tabOrUrl: Tab | string) {
+  const allTabs = await getTabInfo();
+
+  const baseUrl = new URL(
+    typeof tabOrUrl === 'string' ? tabOrUrl : tabOrUrl.url!,
+  );
+  const fullUrl = baseUrl.origin + baseUrl.pathname;
+
+  const dupes = allTabs.tabs.all.filter((tab) => {
+    const tabBaseUrl = new URL(tab.url!);
+    const tabFullUrl = tabBaseUrl.origin + tabBaseUrl.pathname;
+    return fullUrl === tabFullUrl;
+  });
+
+  return dupes;
 }
