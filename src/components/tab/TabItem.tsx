@@ -14,7 +14,7 @@ import {
   useOutsideClick,
   useToast,
 } from '@chakra-ui/react';
-import React, { useContext, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useRef } from 'react';
 import { MdOpenInNew } from 'react-icons/md';
 import {
   BrowserWindow,
@@ -30,7 +30,7 @@ type TabItemMenuContextType = {
   openTabMenu: (tab: Tab | null) => void;
 };
 
-export const TabItemMenuContext = React.createContext<TabItemMenuContextType>({
+export const TabItemMenuContext = createContext<TabItemMenuContextType>({
   tab: null,
   openTabMenu: () => {},
 });
