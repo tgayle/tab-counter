@@ -8,7 +8,9 @@
     "moduleResolution": "node",
     "noImplicitReturns": true,
     "noUnusedLocals": true,
+    "noEmit": true,
     "strict": true,
-    "target": "ES2018"
+    "target": "ES2018",
+    "skipLibCheck": true
   }
 }

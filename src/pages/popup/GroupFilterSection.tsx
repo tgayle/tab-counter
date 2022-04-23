@@ -8,9 +8,8 @@ import {
   MenuList,
   MenuOptionGroup,
   Spacer,
-  Tag,
-  TagProps,
   Box,
+  Select,
 } from '@chakra-ui/react';
 import React from 'react';
 import { MdSearch, MdSort } from 'react-icons/md';
@@ -45,23 +44,19 @@ export function TabGroupFilterSection({ searchHandlers, stats }: Props) {
 
   return (
     <HStack spacing={2}>
-      <FilterTag
-        currentFilter={filter}
-        filter={TabFilterType.Audible}
-        scheme="green"
-        onChange={setTabFilterType}
+      <Select
+        value={filter}
+        onChange={(e) => {
+          if (Object.values(TabFilterType).includes(e.target.value as any)) {
+            setTabFilterType(e.target.value as TabFilterType);
+          }
+        }}
       >
-        Audible{stats.audible.length ? ` (${stats.audible.length})` : ''}
-      </FilterTag>
-
-      <FilterTag
-        currentFilter={filter}
-        filter={TabFilterType.CurrentWindow}
-        scheme="blue"
-        onChange={setTabFilterType}
-      >
-        Current Window
-      </FilterTag>
+        <option value={TabFilterType.All}>All</option>
+        <option value={TabFilterType.Audible}>Audible</option>
+        <option value={TabFilterType.CurrentWindow}>Current Window</option>
+        <option value={TabFilterType.Duplicates}>Duplicates</option>
+      </Select>
 
       <Spacer />
 
@@ -120,25 +115,3 @@ export function TabGroupFilterSection({ searchHandlers, stats }: Props) {
     </HStack>
   );
 }
-
-const FilterTag = ({
-  scheme,
-  currentFilter,
-  filter,
-  onChange,
-  children,
-}: React.PropsWithChildren<{
-  scheme: TagProps['colorScheme'];
-  currentFilter: TabFilterType;
-  filter: TabFilterType;
-  onChange: (filter: TabFilterType) => void;
-}>) => {
-  return (
-    <Tag
-      colorScheme={currentFilter === filter ? scheme : 'gray'}
-      onClick={() => onChange(filter)}
-    >
-      {children}
-    </Tag>
-  );
-};

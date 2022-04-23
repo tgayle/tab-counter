@@ -1,9 +1,10 @@
-import { BrowserWindow, Tab } from '../tabutil';
+import { BrowserWindow, getTabInfo, Tab } from '../tabutil';
 
 export enum TabFilterType {
   Audible = 'audible',
   All = 'all',
   CurrentWindow = 'currentWindow',
+  Duplicates = 'dupes',
 }
 
 export enum GroupSortOrder {
@@ -43,6 +44,9 @@ export async function filterTabs(
     case TabFilterType.CurrentWindow: {
       const currentWindow = await chrome.windows.getCurrent();
       return tabs.filter((tab) => tab.windowId === currentWindow.id);
+    }
+    case TabFilterType.Duplicates: {
+      return groupAndFilterDuplicateTabs(tabs, DuplicatePolicy.Presets);
     }
     default:
       throw new Error(`Unexpected tab filter type: ${filter}`);
@@ -140,4 +144,102 @@ export function sortDomains(
       return titleA < titleB ? -1 : titleA > titleB ? 1 : 0;
     }),
   }));
+}
+
+export enum DuplicatePolicy {
+  Exact,
+  BasePath,
+  Presets,
+}
+
+const presetDuplicateResolvers: Record<
+  string,
+  (url1: URL, url2: URL) => boolean
+> = {
+  'https://www.youtube.com/watch': (url1, url2) => {
+    return url1.searchParams.get('v') === url2.searchParams.get('v');
+  },
+  'https://www.google.com/search': (url1, url2) => {
+    return url1.searchParams.get('q') === url2.searchParams.get('q');
+  },
+};
+
+export function filterDuplicateTabs(
+  sourceUrl: URL,
+  tabs: { tab: Tab; url: URL }[],
+  policy: DuplicatePolicy,
+  seen = new Set<Tab>(),
+): Tab[] {
+  const fullUrl = sourceUrl.origin + sourceUrl.pathname;
+
+  console.log('Seeking duplicates for', fullUrl, 'from list', tabs);
+
+  const dupes = tabs.filter(({ tab, url: tabUrl }) => {
+    if (seen.has(tab)) return false;
+    const tabFullUrl = tabUrl.origin + tabUrl.pathname;
+    const sameBasePath = fullUrl === tabFullUrl;
+
+    switch (policy) {
+      case DuplicatePolicy.BasePath: {
+        return sameBasePath;
+      }
+      case DuplicatePolicy.Exact: {
+        return tabUrl.href === sourceUrl.href;
+      }
+      case DuplicatePolicy.Presets: {
+        if (sameBasePath && presetDuplicateResolvers[fullUrl]) {
+          return presetDuplicateResolvers[fullUrl](sourceUrl, tabUrl);
+        }
+
+        return sameBasePath;
+      }
+    }
+  });
+
+  const dupedTabs = dupes.map((it) => it.tab);
+  if (dupedTabs.length === 1) return [];
+  return dupedTabs;
+}
+
+function groupAndFilterDuplicateTabs(tabs: Tab[], policy: DuplicatePolicy) {
+  const tabsByBaseUrl: Record<string, { tab: Tab; url: URL }[]> = {};
+  for (const tab of tabs) {
+    if (!tab.url) continue;
+    const url = new URL(tab.url);
+    const base = url.origin + url.pathname;
+    const all = tabsByBaseUrl[base] || [];
+    all.push({ tab, url });
+    tabsByBaseUrl[base] = all;
+  }
+
+  const all: Tab[] = [];
+
+  for (const tabsForBase of Object.values(tabsByBaseUrl)) {
+    if (tabsForBase.length === 1) continue;
+    const seen = new Set<Tab>();
+    for (const { url } of tabsForBase) {
+      const dupes = filterDuplicateTabs(url, tabsForBase, policy, seen);
+      all.push(...dupes);
+      dupes.forEach((it) => seen.add(it));
+    }
+  }
+
+  return all;
+}
+
+export async function findDuplicateTabs(
+  tabOrUrl: Tab | string,
+  duplicatePolicy: DuplicatePolicy = DuplicatePolicy.Presets,
+) {
+  const allTabs = await getTabInfo();
+
+  const currentUrl = new URL(
+    typeof tabOrUrl === 'string' ? tabOrUrl : tabOrUrl.url!,
+  );
+
+  return filterDuplicateTabs(
+    currentUrl,
+    allTabs.tabs.all.map((tab) => ({ tab, url: new URL(tab.url!) })),
+    duplicatePolicy,
+  );
 }
