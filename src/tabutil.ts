@@ -111,18 +111,55 @@ export async function closeTab(tab: Tab) {
   await chrome.tabs.remove(tab.id!);
 }
 
-export async function findDuplicateTabs(tabOrUrl: Tab | string) {
+export enum DuplicatePolicy {
+  Exact,
+  BasePath,
+  Presets,
+}
+
+const presetDuplicateResolvers: Record<
+  string,
+  (url1: URL, url2: URL) => boolean
+> = {
+  'https://www.youtube.com/watch': (url1, url2) => {
+    return url1.searchParams.get('v') === url2.searchParams.get('v');
+  },
+  'https://www.google.com/search': (url1, url2) => {
+    return url1.searchParams.get('q') === url2.searchParams.get('q');
+  },
+};
+
+export async function findDuplicateTabs(
+  tabOrUrl: Tab | string,
+  duplicatePolicy: DuplicatePolicy = DuplicatePolicy.Presets,
+) {
   const allTabs = await getTabInfo();
 
-  const baseUrl = new URL(
+  const currentUrl = new URL(
     typeof tabOrUrl === 'string' ? tabOrUrl : tabOrUrl.url!,
   );
-  const fullUrl = baseUrl.origin + baseUrl.pathname;
+  const fullUrl = currentUrl.origin + currentUrl.pathname;
 
   const dupes = allTabs.tabs.all.filter((tab) => {
-    const tabBaseUrl = new URL(tab.url!);
-    const tabFullUrl = tabBaseUrl.origin + tabBaseUrl.pathname;
-    return fullUrl === tabFullUrl;
+    const tabUrl = new URL(tab.url!);
+    const tabFullUrl = tabUrl.origin + tabUrl.pathname;
+    const sameBaseBath = fullUrl === tabFullUrl;
+
+    switch (duplicatePolicy) {
+      case DuplicatePolicy.BasePath: {
+        return sameBaseBath;
+      }
+      case DuplicatePolicy.Exact: {
+        return tabUrl.href === currentUrl.href;
+      }
+      case DuplicatePolicy.Presets: {
+        if (sameBaseBath && presetDuplicateResolvers[fullUrl]) {
+          return presetDuplicateResolvers[fullUrl](currentUrl, tabUrl);
+        }
+
+        return sameBaseBath;
+      }
+    }
   });
 
   return dupes;
