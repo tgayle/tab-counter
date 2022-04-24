@@ -3,6 +3,11 @@ export type BrowserWindow = chrome.windows.Window;
 
 export type TabInfo = {
   text: string;
+  count: {
+    normal: number;
+    incognito: number;
+    all: number;
+  };
   tabs: {
     normal: chrome.tabs.Tab[];
     incognito: chrome.tabs.Tab[];
@@ -21,6 +26,11 @@ export async function getTabInfo(): Promise<TabInfo> {
 
   return {
     text,
+    count: {
+      all: tabs.length,
+      incognito: incognitoTabs.length,
+      normal: normalTabs.length,
+    },
     tabs: {
       normal: normalTabs,
       incognito: incognitoTabs,
