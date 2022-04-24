@@ -1,6 +1,6 @@
 // Right clicking within a tab will show duplicate tabs.
 
-import { findDuplicateTabs } from '../action/TabFilter';
+import { findDuplicateTabs } from '../action/duplication/tabDeduplication';
 import { getCurrentWindow, focusTab } from '../tabutil';
 
 let contextMenuSetup = false;
