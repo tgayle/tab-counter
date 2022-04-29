@@ -6,6 +6,10 @@ A browser extension for counting and searching your open tabs/windows.
 
 ### Features:
 - [x] Searching Tabs
+- [x] Filtering Tabs
+  - [x] Duplicate Tabs
+  - [x] Audible Tabs
+  - [x] Current Window
 - [x] Grouping Tabs
   - [x] by domain/origin
   - [x] by window
