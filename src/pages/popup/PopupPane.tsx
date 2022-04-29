@@ -137,12 +137,12 @@ const OpenTabGroup = ({
           : groups.grouping === 'window'
           ? groups.filteredTabs.map(({ window, tabs }) => (
               <GroupAccordionItem
-                title={`#${window.id}`}
+                title={tabs.find((it) => it.active)?.title ?? `#${window.id}`}
                 tabs={tabs}
                 key={window.id}
               />
             ))
-          : null}
+          : `how did you get here? (grouping=${JSON.stringify(groups)})`}
       </Accordion>
     </div>
   );
