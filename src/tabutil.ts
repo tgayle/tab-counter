@@ -99,7 +99,15 @@ export async function getCurrentWindow() {
     return await chrome.windows.getCurrent();
   }
 
-  return await chrome.windows.get(currentWindowId!);
+  if (currentWindowId === null) {
+    // TODO:
+    console.warn(
+      "getCurrentWindow called from background, but the currentWindowId hasn't been set yet. Falling back to chrome.windows.getCurrent(). (this may return the wrong window)",
+    );
+    return await chrome.windows.getCurrent();
+  }
+
+  return await chrome.windows.get(currentWindowId);
 }
 
 export async function getCurrentTab() {

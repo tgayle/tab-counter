@@ -1,7 +1,7 @@
 // Right clicking within a tab will show duplicate tabs.
 
 import { findDuplicateTabs } from '../action/duplication/tabDeduplication';
-import { getCurrentWindow, focusTab } from '../tabutil';
+import { getCurrentWindow, focusTab, setCurrentWindow } from '../tabutil';
 
 let contextMenuSetup = false;
 let settingUpMenu = false;
@@ -19,6 +19,7 @@ chrome.contextMenus.onClicked.addListener(async (data, tab) => {
 export async function updateTabContextMenu(tab: chrome.tabs.Tab) {
   if (settingUpMenu) return;
   settingUpMenu = true;
+  setCurrentWindow(tab.windowId);
 
   const done = () => {
     contextMenuSetup = true;
