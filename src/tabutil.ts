@@ -140,3 +140,7 @@ export async function reopenIncognitoTab(tab: Tab) {
 export async function closeTab(tab: Tab) {
   await chrome.tabs.remove(tab.id!);
 }
+
+export async function closeWindow(window: chrome.windows.Window) {
+  await chrome.windows.remove(window.id!);
+}
