@@ -39,31 +39,6 @@ export async function getTabInfo(): Promise<TabInfo> {
   };
 }
 
-export type TabStats = {
-  audible: Tab[];
-  muted: Tab[];
-};
-
-export function getTabsStats(tabs: Tab[]): TabStats {
-  const audible: Tab[] = [];
-  const muted: Tab[] = [];
-
-  for (const tab of tabs) {
-    if (tab.audible) {
-      audible.push(tab);
-    }
-
-    if (tab.mutedInfo?.muted) {
-      muted.push(tab);
-    }
-  }
-
-  return {
-    audible,
-    muted,
-  };
-}
-
 export async function focusTab(tab: Tab, switchToWindow: boolean = true) {
   const currentWindow = await getCurrentWindow();
   await chrome.tabs.update(tab.id!, { active: true });

@@ -11,15 +11,15 @@ import {
   Box,
   Select,
 } from '@chakra-ui/react';
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { MdSearch, MdSort } from 'react-icons/md';
+import { TabStats } from '../../action/TabStats';
 import {
   TabFilterType,
   GroupTabsByOptions,
   GroupSortOrder,
   useFilterSettings,
 } from '../../hooks/useFilterSettings';
-import { TabStats } from '../../tabutil';
 
 type UseBooleanResult = ReturnType<typeof useBoolean>[1];
 
@@ -52,10 +52,22 @@ export function TabGroupFilterSection({ searchHandlers, stats }: Props) {
           }
         }}
       >
-        <option value={TabFilterType.All}>All</option>
-        <option value={TabFilterType.Audible}>Audible</option>
-        <option value={TabFilterType.CurrentWindow}>Current Window</option>
-        <option value={TabFilterType.Duplicates}>Duplicates</option>
+        <FilterSelectOption value={TabFilterType.All}>All</FilterSelectOption>
+        <FilterSelectOption value={TabFilterType.CurrentWindow}>
+          Current Window
+        </FilterSelectOption>
+        <FilterSelectOption
+          count={stats.audible.length}
+          value={TabFilterType.Audible}
+        >
+          Audible
+        </FilterSelectOption>
+        <FilterSelectOption
+          count={stats.duplicates.length}
+          value={TabFilterType.Duplicates}
+        >
+          Duplicates
+        </FilterSelectOption>
       </Select>
 
       <Spacer />
@@ -113,5 +125,22 @@ export function TabGroupFilterSection({ searchHandlers, stats }: Props) {
         </Menu>
       </Box>
     </HStack>
+  );
+}
+
+function FilterSelectOption({
+  children,
+  value,
+  count,
+}: {
+  children: ReactNode;
+  value: string;
+  count?: number;
+}) {
+  console.log(children);
+  return (
+    <option value={value}>
+      {count && `(${count}) - `} {children}
+    </option>
   );
 }

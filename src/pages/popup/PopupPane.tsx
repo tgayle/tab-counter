@@ -21,13 +21,14 @@ import {
   MenuItem,
 } from '@chakra-ui/react';
 import React, { useEffect, useRef, useState } from 'react';
+import { getTabsStats } from '../../action/TabStats';
 import { TabItem, TabItemMenuContext } from '../../components/tab/TabItem';
 import { useContextMenu } from '../../hooks/useContextMenu';
 import { useCurrentWindow } from '../../hooks/useCurrentWindow';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useFilteredTabs } from '../../hooks/useFilteredTabs';
 import { useTabInfo } from '../../hooks/useTabInfo';
-import { closeWindow, getTabsStats, Tab as TabType } from '../../tabutil';
+import { closeWindow, Tab as TabType } from '../../tabutil';
 import { TabGroupFilterSection } from './GroupFilterSection';
 
 export const PopupPane = () => {
