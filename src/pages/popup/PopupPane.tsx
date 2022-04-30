@@ -15,14 +15,19 @@ import {
   AccordionPanel,
   AccordionButton,
   AccordionIcon,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
 } from '@chakra-ui/react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { TabItem, TabItemMenuContext } from '../../components/tab/TabItem';
+import { useContextMenu } from '../../hooks/useContextMenu';
 import { useCurrentWindow } from '../../hooks/useCurrentWindow';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useFilteredTabs } from '../../hooks/useFilteredTabs';
 import { useTabInfo } from '../../hooks/useTabInfo';
-import { getTabsStats, Tab as TabType } from '../../tabutil';
+import { closeWindow, getTabsStats, Tab as TabType } from '../../tabutil';
 import { TabGroupFilterSection } from './GroupFilterSection';
 
 export const PopupPane = () => {
@@ -140,6 +145,8 @@ const OpenTabGroup = ({
                 title={tabs.find((it) => it.active)?.title ?? `#${window.id}`}
                 tabs={tabs}
                 key={window.id}
+                hasWindowMenu
+                onRemoveWindow={() => closeWindow(window)}
               />
             ))
           : `how did you get here? (grouping=${JSON.stringify(groups)})`}
@@ -151,20 +158,43 @@ const OpenTabGroup = ({
 const GroupAccordionItem = ({
   title,
   tabs,
+  hasWindowMenu,
+  onRemoveWindow,
 }: {
   title: string;
   tabs: TabType[];
+  hasWindowMenu?: boolean;
+  onRemoveWindow?: () => void;
 }) => {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  useContextMenu({
+    onOpen: () => setMenuOpen(true),
+    onClose: () => setMenuOpen(false),
+    buttonRef,
+    enabled: !!hasWindowMenu,
+    menuRef,
+  });
+
   return (
     <AccordionItem>
       {({ isExpanded }) => (
         <>
-          <AccordionButton>
+          <AccordionButton ref={buttonRef}>
             <Text flex={1} noOfLines={1} title={title} textAlign="start">
               {title}
             </Text>
             <span>({tabs.length})</span>
             <AccordionIcon ml={2} />
+            <Menu isOpen={menuOpen}>
+              <MenuButton as="span" />
+              <MenuList ref={menuRef}>
+                <MenuItem onClick={() => onRemoveWindow?.()}>
+                  Close Window
+                </MenuItem>
+              </MenuList>
+            </Menu>
           </AccordionButton>
           <AccordionPanel pb={0}>
             {isExpanded && <BrowserTabList tabs={tabs} />}

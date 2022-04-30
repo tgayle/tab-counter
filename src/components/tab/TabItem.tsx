@@ -11,11 +11,10 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
-  useOutsideClick,
-  useToast,
 } from '@chakra-ui/react';
-import React, { createContext, useContext, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useRef } from 'react';
 import { MdOpenInNew } from 'react-icons/md';
+import { useContextMenu } from '../../hooks/useContextMenu';
 import {
   BrowserWindow,
   closeTab,
@@ -47,23 +46,18 @@ export const TabItem = ({
       tab.windowId !== currentWindow?.id) ||
     tab.incognito;
   const canSwitchToTab = !(tab.active && tab.windowId === currentWindow?.id);
-  const toast = useToast({ position: 'bottom' });
-  const toastIds = useRef<(number | string | undefined)[]>([]);
   const buttonEnabled = canSwitchToTab || canMoveTabToWindow;
 
   const menuContext = useContext(TabItemMenuContext);
-  const menuOpen = menuContext.tab === tab;
   const menuRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    return () => {
-      toastIds.current.forEach((id) => id && toast.close(id));
-    };
-  }, []);
-
-  useOutsideClick({
-    ref: menuRef,
-    handler: () => menuContext.openTabMenu(null),
+  const menuButtonRef = useRef<HTMLButtonElement | null>(null);
+  const menuOpen = menuContext.tab === tab;
+  useContextMenu({
+    menuRef,
+    enabled: buttonEnabled,
+    onOpen: () => menuContext.openTabMenu(tab),
+    onClose: () => menuContext.openTabMenu(null),
+    buttonRef: menuButtonRef,
   });
 
   return (
@@ -85,6 +79,7 @@ export const TabItem = ({
             title="Switch to tab"
             aria-label="Switch to tab"
             icon={<MdOpenInNew />}
+            ref={menuButtonRef}
             isDisabled={!buttonEnabled}
             onClick={(e) => {
               if (tab.active && tab.windowId === currentWindow?.id) {
@@ -93,11 +88,6 @@ export const TabItem = ({
               } else {
                 focusTab(tab);
               }
-            }}
-            onContextMenu={(e) => {
-              if (e.ctrlKey || !buttonEnabled) return;
-              e.preventDefault();
-              menuContext.openTabMenu(tab);
             }}
           />
           <MenuList ref={menuRef}>
@@ -120,23 +110,7 @@ export const TabItem = ({
                 Reopen in normal window
               </MenuItem>
             )}
-            <MenuItem
-              onClick={(event) => {
-                if (event.ctrlKey) {
-                  closeTab(tab);
-                } else {
-                  event.preventDefault();
-                  toastIds.current.push(
-                    toast({
-                      description: 'Hold Ctrl to delete.',
-                      duration: 2000,
-                    }),
-                  );
-                }
-              }}
-            >
-              Close
-            </MenuItem>
+            <MenuItem onClick={() => closeTab(tab)}>Close</MenuItem>
           </MenuList>
         </Menu>
       </Flex>
