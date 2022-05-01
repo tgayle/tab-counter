@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { TabFilterProcessor } from '../action/TabFilterProcessor';
+import { FilterSettings } from '../settings';
 import { Tab, BrowserWindow } from '../tabutil';
-import { useFilterSettings, FilterSettings } from './useFilterSettings';
+import { useFilterSettings } from './useFilterSettings';
 
 type GroupedTab = {
   allTabs: Tab[];
@@ -40,8 +41,11 @@ export function useFilteredTabs(
   const sortOptions = useFilterSettings();
 
   useEffect(() => {
-    const { groupSortBy, loaded, tabFilterType, tabGrouping, tabSortBy } =
-      sortOptions;
+    TabFilterProcessor.viaIpc.getCurrent().then(setGroupedTabs);
+  }, []);
+
+  useEffect(() => {
+    const { loaded } = sortOptions;
 
     if (!loaded) {
       return;
@@ -52,33 +56,15 @@ export function useFilteredTabs(
       if (await TabFilterProcessor.viaIpc.isLoading()) {
         return;
       }
-      await TabFilterProcessor.viaIpc.setFilters({
-        grouping: {
-          sortBy: groupSortBy,
-          groupBy: tabGrouping,
-        },
-        query: searchQuery,
-        tabs: {
-          sortBy: tabSortBy,
-          type: tabFilterType,
-        },
-      });
 
+      await TabFilterProcessor.viaIpc.setSearchQuery(searchQuery);
       await TabFilterProcessor.viaIpc.setTabs(tabs);
       const res = await TabFilterProcessor.viaIpc.submit();
       console.log('received result', res);
       setGroupedTabs(res);
       setLoading(false);
     })();
-  }, [
-    searchQuery,
-    sortOptions.loaded,
-    sortOptions.groupSortBy,
-    sortOptions.tabFilterType,
-    sortOptions.tabGrouping,
-    sortOptions.tabSortBy,
-    tabs,
-  ]);
+  }, [searchQuery, tabs]);
 
   return {
     loading,

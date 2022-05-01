@@ -48,7 +48,7 @@ export const PopupPane = () => {
     return () => chrome.runtime.onMessage.removeListener(cb);
   }, []);
 
-  if (loading) return null;
+  if (loading && !tabs.all.length) return null;
 
   const { all: allTabs, incognito: incogTabs, normal: normalTabs } = tabs;
 
@@ -65,15 +65,11 @@ export const PopupPane = () => {
         </TabList>
 
         <TabPanels>
-          <TabPanel>
-            <OpenTabGroup tabs={allTabs} searchQuery={initialSearchQuery} />
-          </TabPanel>
-          <TabPanel>
-            <OpenTabGroup tabs={normalTabs} searchQuery={initialSearchQuery} />
-          </TabPanel>
-          <TabPanel>
-            <OpenTabGroup tabs={incogTabs} searchQuery={initialSearchQuery} />
-          </TabPanel>
+          {[allTabs, normalTabs, incogTabs].map((tabs) => (
+            <TabPanel>
+              <OpenTabGroup tabs={tabs} searchQuery={initialSearchQuery} />
+            </TabPanel>
+          ))}
         </TabPanels>
       </Tabs>
     </div>

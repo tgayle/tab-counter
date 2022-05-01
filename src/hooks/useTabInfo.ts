@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { TabInfo, getTabInfo } from '../tabutil';
 
-type UseTabInfoResult =
-  | { loading: false; tabs: TabInfo['tabs'] }
-  | { loading: true; tabs: undefined };
+type UseTabInfoResult = { loading: boolean; tabs: TabInfo['tabs'] };
 
 export function useTabInfo(): UseTabInfoResult {
-  const [tabs, setTabs] = useState<TabInfo['tabs']>();
+  const [tabs, setTabs] = useState<TabInfo['tabs']>({
+    all: [],
+    incognito: [],
+    normal: [],
+  });
   const [loading, setLoading] = useState(true);
 
   const updateTabs = async () => {
@@ -27,15 +29,8 @@ export function useTabInfo(): UseTabInfoResult {
     };
   }, []);
 
-  if (loading === false && tabs) {
-    return {
-      loading: false,
-      tabs,
-    };
-  }
-
   return {
-    loading: true,
-    tabs: undefined,
+    loading,
+    tabs,
   };
 }
