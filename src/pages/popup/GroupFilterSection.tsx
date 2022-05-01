@@ -140,7 +140,7 @@ function FilterSelectOption({
   console.log(children);
   return (
     <option value={value}>
-      {count && `(${count}) - `} {children}
+      {count ? `(${count}) - ` : ''} {children}
     </option>
   );
 }
