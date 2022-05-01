@@ -16,6 +16,7 @@ export {
 
 export type UseFilterSettings = FilterSettings & {
   loaded: boolean;
+  dependencyArray: any[];
 
   setTabFilterType: (it: TabFilterType) => void;
   setTabGrouping: (it: GroupTabsByOptions) => void;
@@ -43,6 +44,7 @@ export function useFilterSettings(): UseFilterSettings {
       tabGrouping,
       tabSortBy,
     }: FilterSettings) => {
+      console.log('settings update');
       setGroupOrder(groupSortBy);
       setTabGrouping(tabGrouping);
       setTabSortOrder(tabSortBy);
@@ -69,5 +71,6 @@ export function useFilterSettings(): UseFilterSettings {
     setTabFilterType: settings.setTabFilterType,
     setTabGrouping: settings.setTabGrouping,
     setTabSortBy: settings.setTabSortBy,
+    dependencyArray: [groupSortBy, tabFilterType, tabGrouping, tabSortBy],
   };
 }

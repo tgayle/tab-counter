@@ -48,20 +48,26 @@ export const PopupPane = () => {
     return () => chrome.runtime.onMessage.removeListener(cb);
   }, []);
 
-  if (loading && !tabs.all.length) return null;
-
   const { all: allTabs, incognito: incogTabs, normal: normalTabs } = tabs;
+  const [selectedTab, setSelectedTab] = useState(0);
+  const tabTitles = [
+    `All (${allTabs.length})`,
+    normalTabs.length && incogTabs.length
+      ? `Normal (${normalTabs.length})`
+      : null,
+    incogTabs.length ? `Incognito (${incogTabs.length})` : null,
+  ];
+
+  useEffect(() => {
+    if (!tabTitles[selectedTab]) setSelectedTab(0);
+  }, [tabTitles.filter((it) => it).length]);
 
   return (
     <div style={{ width: '350px', maxWidth: '350px' }}>
-      <Tabs isLazy>
+      <Tabs isLazy index={selectedTab} onChange={setSelectedTab}>
         {loading && <Progress isIndeterminate />}
         <TabList>
-          <Tab>All ({allTabs.length})</Tab>
-          {normalTabs.length && incogTabs.length ? (
-            <Tab>Normal ({normalTabs.length})</Tab>
-          ) : null}
-          {incogTabs.length ? <Tab>Incognito ({incogTabs.length})</Tab> : null}
+          {tabTitles.map((title) => (title ? <Tab>{title}</Tab> : null))}
         </TabList>
 
         <TabPanels>

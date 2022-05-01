@@ -137,7 +137,6 @@ function FilterSelectOption({
   value: string;
   count?: number;
 }) {
-  console.log(children);
   return (
     <option value={value}>
       {count ? `(${count}) - ` : ''} {children}

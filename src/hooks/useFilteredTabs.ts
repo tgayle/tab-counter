@@ -41,30 +41,26 @@ export function useFilteredTabs(
   const sortOptions = useFilterSettings();
 
   useEffect(() => {
-    TabFilterProcessor.viaIpc.getCurrent().then(setGroupedTabs);
-  }, []);
-
-  useEffect(() => {
-    const { loaded } = sortOptions;
-
-    if (!loaded) {
-      return;
-    }
-
     (async () => {
       setLoading(true);
-      if (await TabFilterProcessor.viaIpc.isLoading()) {
-        return;
-      }
-
-      await TabFilterProcessor.viaIpc.setSearchQuery(searchQuery);
+      await TabFilterProcessor.viaIpc.setFilters({
+        query: searchQuery,
+        grouping: {
+          groupBy: sortOptions.tabGrouping,
+          sortBy: sortOptions.groupSortBy,
+        },
+        tabs: {
+          sortBy: sortOptions.tabSortBy,
+          type: sortOptions.tabFilterType,
+        },
+      });
       await TabFilterProcessor.viaIpc.setTabs(tabs);
       const res = await TabFilterProcessor.viaIpc.submit();
       console.log('received result', res);
       setGroupedTabs(res);
       setLoading(false);
     })();
-  }, [searchQuery, tabs]);
+  }, [searchQuery, tabs, ...sortOptions.dependencyArray]);
 
   return {
     loading,
