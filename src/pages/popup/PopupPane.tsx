@@ -67,7 +67,9 @@ export const PopupPane = () => {
       <Tabs isLazy index={selectedTab} onChange={setSelectedTab}>
         {loading && <Progress isIndeterminate />}
         <TabList>
-          {tabTitles.map((title) => (title ? <Tab>{title}</Tab> : null))}
+          {tabTitles.map((title) =>
+            title ? <Tab key={title}>{title}</Tab> : null,
+          )}
         </TabList>
 
         <TabPanels>
