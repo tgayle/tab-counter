@@ -12,5 +12,6 @@
     "strict": true,
     "target": "ES2018",
     "skipLibCheck": true
-  }
+  },
+  "include": ["src/", "vite.config.ts"]
 }
