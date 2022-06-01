@@ -23,8 +23,9 @@ async function updateCount() {
     text = `${count.normal}/${count.incognito}`;
   }
 
+  const color = getBadgeColor(count.all);
   await chrome.action.setBadgeBackgroundColor({
-    color: getBadgeColor(count.all),
+    color,
   });
   await chrome.action.setBadgeText({
     text,
@@ -50,5 +51,10 @@ function getBadgeColor(tabCount: number) {
 
   const combinedColors = adjustedInitial.map((it, i) => it + adjustedTarget[i]);
 
-  return '#' + combinedColors.map((it) => Math.floor(it).toString(16)).join('');
+  return (
+    '#' +
+    combinedColors
+      .map((it) => Math.floor(it).toString(16).padStart(2, '0'))
+      .join('')
+  );
 }
