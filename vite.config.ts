@@ -7,7 +7,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 export default defineConfig({
   build: {
-    sourcemap: 'inline',
+    sourcemap: true,
   },
   plugins: [
     react(),

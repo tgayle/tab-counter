@@ -77,13 +77,22 @@ export async function findDuplicateTabs(
 ) {
   const allTabs = await getTabInfo();
 
-  const currentUrl = new URL(
-    typeof tabOrUrl === 'string' ? tabOrUrl : tabOrUrl.url!,
-  );
+  let url: string;
+  if (typeof tabOrUrl === 'string') {
+    url = tabOrUrl;
+  } else if (tabOrUrl.url) {
+    url = tabOrUrl.url;
+  } else {
+    return [];
+  }
+
+  const currentUrl = new URL(url);
 
   return filterDuplicateTabs(
     currentUrl,
-    allTabs.tabs.all.map((tab) => ({ tab, url: new URL(tab.url!) })),
+    allTabs.tabs.all
+      .filter((it: Tab): it is Omit<Tab, 'url'> & { url: string } => !!it.url)
+      .map((tab) => ({ tab, url: new URL(tab.url) })),
     duplicatePolicy,
   );
 }
