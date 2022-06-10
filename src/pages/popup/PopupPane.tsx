@@ -73,8 +73,8 @@ export const PopupPane = () => {
         </TabList>
 
         <TabPanels>
-          {[allTabs, normalTabs, incogTabs].map((tabs) => (
-            <TabPanel>
+          {[allTabs, normalTabs, incogTabs].map((tabs, i) => (
+            <TabPanel key={i}>
               <OpenTabGroup tabs={tabs} searchQuery={initialSearchQuery} />
             </TabPanel>
           ))}

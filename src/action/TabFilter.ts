@@ -93,7 +93,9 @@ function getDisplayOriginForUrl(url: URL) {
 
 export function groupTabsByDomain(tabs: Tab[]) {
   return tabs.reduce((domains, tab) => {
-    const url = new URL(tab.url!);
+    if (!tab.url) return domains;
+
+    const url = new URL(tab.url);
     const origin = getDisplayOriginForUrl(url);
     const domainUrls = domains[origin] || [];
     domainUrls.push(tab);
