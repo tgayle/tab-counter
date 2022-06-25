@@ -1,6 +1,5 @@
 import {
   Tabs,
-  Progress,
   TabList,
   Text,
   Tab,
@@ -23,16 +22,17 @@ import React, { useRef, useState } from 'react';
 import { getTabsStats } from '../../action/TabStats';
 import { TabItem } from '../../components/tab/TabItem';
 import { useContextMenu } from '../../hooks/useContextMenu';
-import { useTabInfo } from '../../hooks/useTabInfo';
 import { useStore } from '../../store';
 import { closeWindow, Tab as TabType } from '../../tabutil';
 import { TabGroupFilterSection } from './GroupFilterSection';
 
 export const PopupPane = () => {
-  const { tabs, loading } = useTabInfo();
-  const { all: allTabs, incognito: incogTabs, normal: normalTabs } = tabs;
   const selectedTab = useStore((state) => state.state.activeTab);
   const setSelectedTab = useStore((state) => state.state.setActiveTab);
+  const allTabs = useStore(({ state }) => state.allTabs);
+  const incogTabs = useStore(({ state }) => state.incognitoTabs);
+  const normalTabs = useStore(({ state }) => state.normalTabs);
+
   const tabTitles = [
     `All (${allTabs.length})`,
     normalTabs.length && incogTabs.length
@@ -44,7 +44,6 @@ export const PopupPane = () => {
   return (
     <div style={{ width: '350px', maxWidth: '350px' }}>
       <Tabs isLazy index={selectedTab} onChange={setSelectedTab}>
-        {loading && <Progress isIndeterminate />}
         <TabList>
           {tabTitles.map((title) =>
             title ? <Tab key={title}>{title}</Tab> : null,

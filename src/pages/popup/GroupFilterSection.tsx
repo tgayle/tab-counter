@@ -17,7 +17,7 @@ import {
   TabFilterType,
   GroupTabsByOptions,
   GroupSortOrder,
-} from '../../hooks/useFilterSettings';
+} from '../../action/TabFilter';
 import { useStore } from '../../store';
 
 type Props = {
