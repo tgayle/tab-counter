@@ -1,5 +1,4 @@
 import {
-  useBoolean,
   IconButton,
   HStack,
   Menu,
@@ -18,34 +17,24 @@ import {
   TabFilterType,
   GroupTabsByOptions,
   GroupSortOrder,
-  useFilterSettings,
 } from '../../hooks/useFilterSettings';
-
-type UseBooleanResult = ReturnType<typeof useBoolean>[1];
+import { useStore } from '../../store';
 
 type Props = {
   stats: TabStats;
-  searchHandlers: UseBooleanResult;
 };
 
-export function TabGroupFilterSection({ searchHandlers, stats }: Props) {
-  const {
-    setTabFilterType: _setTabFilterType,
-    setTabGrouping,
-    groupSortBy,
-    setGroupSortBy,
-    tabGrouping,
-    tabFilterType: filter,
-  } = useFilterSettings();
-
-  const setTabFilterType = (newFilter: TabFilterType) => {
-    _setTabFilterType(filter === newFilter ? TabFilterType.All : newFilter);
-  };
+export function TabGroupFilterSection({ stats }: Props) {
+  const toggleSearchVisible = useStore((state) => state.toggleSearchVisible);
+  const setTabFilterType = useStore((state) => state.setTabFilterType);
+  const setTabGrouping = useStore((state) => state.setTabGrouping);
+  const setGroupSortBy = useStore((state) => state.setGroupSortBy);
+  const filters = useStore((state) => state.query);
 
   return (
     <HStack spacing={2}>
       <Select
-        value={filter}
+        value={filters.tabs.type}
         onChange={(e) => {
           if (Object.values(TabFilterType).includes(e.target.value as any)) {
             setTabFilterType(e.target.value as TabFilterType);
@@ -77,7 +66,7 @@ export function TabGroupFilterSection({ searchHandlers, stats }: Props) {
         size="sm"
         icon={<MdSearch />}
         variant="outline"
-        onClick={searchHandlers.toggle}
+        onClick={toggleSearchVisible}
       />
 
       <Box>
@@ -95,7 +84,7 @@ export function TabGroupFilterSection({ searchHandlers, stats }: Props) {
               defaultValue="count"
               title="Order"
               type="radio"
-              value={groupSortBy}
+              value={filters.grouping.sortBy}
               onChange={(choice) => setGroupSortBy(choice as GroupSortOrder)}
             >
               <MenuItemOption value={GroupSortOrder.Count}>
@@ -115,7 +104,7 @@ export function TabGroupFilterSection({ searchHandlers, stats }: Props) {
                 onChange={(option) =>
                   setTabGrouping(option as GroupTabsByOptions)
                 }
-                value={tabGrouping}
+                value={filters.grouping.groupBy}
               >
                 <MenuItemOption value="domain">Domain</MenuItemOption>
                 <MenuItemOption value="window">Window</MenuItemOption>

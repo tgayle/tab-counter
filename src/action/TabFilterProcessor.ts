@@ -12,7 +12,7 @@ import {
   groupTabsByWindow,
 } from './TabFilter';
 
-type Filters = {
+export type Filters = {
   query: string;
   tabs: {
     type: TabFilterType;
@@ -148,56 +148,12 @@ export class TabFilterProcessor {
   };
 
   static readonly viaIpc: IPCHelpers = {
-    setSearchQuery(q) {
+    async execute({ filters, targetTabs }) {
       const msg: IPCMessages['msg'] = {
-        type: 'setSearchQuery',
-        data: q,
-      };
-
-      return sendIpc(msg);
-    },
-    getCurrent() {
-      const msg: IPCMessages['msg'] = {
-        type: 'getCurrent',
-        data: null,
+        data: { filters, targetTabs },
+        type: 'execute',
       };
       return sendIpc(msg);
-    },
-    isLoading() {
-      const msg: IPCMessages['msg'] = {
-        data: null,
-        type: 'isLoading',
-      };
-      return sendIpc<boolean>(msg);
-    },
-    setFilters(filters: Filters) {
-      const msg: IPCMessages['msg'] = {
-        data: filters,
-        type: 'setFilters',
-      };
-      return sendIpc(msg);
-    },
-    setTabs(tabs: Tab[]) {
-      const msg: IPCMessages['msg'] = {
-        data: tabs,
-        type: 'setTabs',
-      };
-      return sendIpc(msg);
-    },
-    submit() {
-      const msg: IPCMessages['msg'] = {
-        data: null,
-        type: 'submit',
-      };
-      type R = Extract<
-        IPCMessages,
-        {
-          msg: {
-            type: 'submit';
-          };
-        }
-      >['res'];
-      return sendIpc<R>(msg);
     },
   };
 }
@@ -213,12 +169,13 @@ type IPCHelpers = {
       ) => Promise<Extract<IPCMessages, { key: T }>['res']>;
 };
 
-function sendIpc<R>(msg: BaseIPCMessage<string, any, any>['msg']) {
-  return new Promise<R>(async (res) =>
+async function sendIpc<R>(msg: BaseIPCMessage<string, any, any>['msg']) {
+  const id = (await getCurrentWindow()).id;
+  return new Promise<R>((res) =>
     chrome.runtime.sendMessage(
       {
         ...msg,
-        windowId: (await getCurrentWindow()).id,
+        windowId: id,
       },
       res,
     ),
@@ -235,13 +192,11 @@ type BaseIPCMessage<T extends string, I, R> = {
   };
 };
 
-export type IPCMessages =
-  | BaseIPCMessage<'setFilters', Filters, null>
-  | BaseIPCMessage<'setTabs', Tab[], null>
-  | BaseIPCMessage<'isLoading', null, boolean>
-  | BaseIPCMessage<'setSearchQuery', string, null>
-  | BaseIPCMessage<'submit', null, GroupedTabType>
-  | BaseIPCMessage<'getCurrent', null, GroupedTabType>;
+export type IPCMessages = BaseIPCMessage<
+  'execute',
+  { filters: Filters; targetTabs: Tab[] },
+  GroupedTabType
+>;
 
 export function profile<T = void>(name: string, action: () => T): T {
   const start = performance.now();

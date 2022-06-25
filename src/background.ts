@@ -12,8 +12,7 @@ import {
 import { setupBadgeCount } from './badge';
 import { setupDupeLinkMenu } from './contextmenu/listDuplicateLinks';
 import { updateTabContextMenu } from './contextmenu/listDuplicateTabs';
-import settings from './settings';
-import { getCurrentTab, getTabInfo, setCurrentWindow } from './tabutil';
+import { getCurrentTab, setCurrentWindow } from './tabutil';
 
 const processor = new TabFilterProcessor({
   grouping: {
@@ -56,35 +55,9 @@ async function main() {
 
       const type = msg.type;
       switch (type) {
-        case 'getCurrent': {
-          if (processor.results) {
-            return respond(processor.results);
-          } else {
-            processor.update().then((res) => {
-              respond(res);
-            });
-            return true;
-          }
-        }
-        case 'isLoading': {
-          return respond(processor.loading);
-        }
-        case 'setFilters': {
-          processor.filters = msg.data;
-          return respond(null);
-        }
-        case 'setTabs': {
-          processor.tabs = msg.data;
-          return respond(null);
-        }
-        case 'setSearchQuery': {
-          processor.filters = {
-            ...processor.filters,
-            query: msg.data,
-          };
-          return respond(null);
-        }
-        case 'submit': {
+        case 'execute': {
+          processor.tabs = msg.data.targetTabs;
+          processor.filters = msg.data.filters;
           console.log('received submit request');
           const listener: TabUpdateListener = (res) => {
             processor.removeListener(listener);
@@ -96,28 +69,9 @@ async function main() {
           return true;
         }
       }
+      return false;
     },
   );
-
-  await settings.loaded;
-  const currentSettings = settings.current;
-  processor.filters = {
-    grouping: {
-      groupBy: currentSettings.tabGrouping,
-      sortBy: currentSettings.groupSortBy,
-    },
-    query: processor.filters.query,
-    tabs: {
-      sortBy: currentSettings.tabSortBy,
-      type: currentSettings.tabFilterType,
-    },
-  };
-
-  const {
-    tabs: { all: allTabs },
-  } = await getTabInfo();
-  processor.tabs = allTabs;
-  await processor.update();
 }
 
 main();

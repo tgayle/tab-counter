@@ -12,9 +12,10 @@ import {
   MenuList,
   MenuItem,
 } from '@chakra-ui/react';
-import React, { createContext, useContext, useRef } from 'react';
+import React, { useRef } from 'react';
 import { MdOpenInNew } from 'react-icons/md';
 import { useContextMenu } from '../../hooks/useContextMenu';
+import { useStore } from '../../store';
 import {
   BrowserWindow,
   closeTab,
@@ -23,16 +24,6 @@ import {
   reopenIncognitoTab,
   Tab,
 } from '../../tabutil';
-
-type TabItemMenuContextType = {
-  tab: Tab | null;
-  openTabMenu: (tab: Tab | null) => void;
-};
-
-export const TabItemMenuContext = createContext<TabItemMenuContextType>({
-  tab: null,
-  openTabMenu: () => {},
-});
 
 export const TabItem = ({
   tab,
@@ -48,15 +39,16 @@ export const TabItem = ({
   const canSwitchToTab = !(tab.active && tab.windowId === currentWindow?.id);
   const buttonEnabled = canSwitchToTab || canMoveTabToWindow;
 
-  const menuContext = useContext(TabItemMenuContext);
+  const activeTabMenu = useStore((state) => state.focusedTabMenu);
+  const openTabMenu = useStore((state) => state.setFocusedTab);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
-  const menuOpen = menuContext.tab === tab;
+  const menuOpen = activeTabMenu === tab;
   useContextMenu({
     menuRef,
     enabled: buttonEnabled,
-    onOpen: () => menuContext.openTabMenu(tab),
-    onClose: () => menuContext.openTabMenu(null),
+    onOpen: () => openTabMenu(tab),
+    onClose: () => openTabMenu(null),
     buttonRef: menuButtonRef,
   });
 
@@ -84,7 +76,7 @@ export const TabItem = ({
             onClick={(e) => {
               if (tab.active && tab.windowId === currentWindow?.id) {
                 e.preventDefault();
-                menuContext.openTabMenu(tab);
+                openTabMenu(tab);
               } else {
                 focusTab(tab);
               }

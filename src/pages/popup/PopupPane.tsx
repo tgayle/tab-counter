@@ -8,7 +8,6 @@ import {
   TabPanel,
   List,
   Input,
-  useBoolean,
   Divider,
   Accordion,
   AccordionItem,
@@ -20,36 +19,21 @@ import {
   MenuList,
   MenuItem,
 } from '@chakra-ui/react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { getTabsStats } from '../../action/TabStats';
-import { TabItem, TabItemMenuContext } from '../../components/tab/TabItem';
+import { TabItem } from '../../components/tab/TabItem';
 import { useContextMenu } from '../../hooks/useContextMenu';
 import { useCurrentWindow } from '../../hooks/useCurrentWindow';
-import { useDebounce } from '../../hooks/useDebounce';
-import { useFilteredTabs } from '../../hooks/useFilteredTabs';
 import { useTabInfo } from '../../hooks/useTabInfo';
+import { useStore } from '../../store';
 import { closeWindow, Tab as TabType } from '../../tabutil';
 import { TabGroupFilterSection } from './GroupFilterSection';
 
 export const PopupPane = () => {
   const { tabs, loading } = useTabInfo();
-
-  const [initialSearchQuery, setInitialQuery] = useState('');
-
-  useEffect(() => {
-    const cb = (msg: { search: string }) => {
-      if ('search' in msg) {
-        setInitialQuery(msg.search);
-        console.log('Received remote search request!', msg);
-      }
-    };
-
-    chrome.runtime.onMessage.addListener(cb);
-    return () => chrome.runtime.onMessage.removeListener(cb);
-  }, []);
-
   const { all: allTabs, incognito: incogTabs, normal: normalTabs } = tabs;
-  const [selectedTab, setSelectedTab] = useState(0);
+  const selectedTab = useStore((state) => state.activeTab);
+  const setSelectedTab = useStore((state) => state.setActiveTab);
   const tabTitles = [
     `All (${allTabs.length})`,
     normalTabs.length && incogTabs.length
@@ -57,10 +41,6 @@ export const PopupPane = () => {
       : null,
     incogTabs.length ? `Incognito (${incogTabs.length})` : null,
   ];
-
-  useEffect(() => {
-    if (!tabTitles[selectedTab]) setSelectedTab(0);
-  }, [tabTitles.filter((it) => it).length]);
 
   return (
     <div style={{ width: '350px', maxWidth: '350px' }}>
@@ -75,7 +55,7 @@ export const PopupPane = () => {
         <TabPanels>
           {[allTabs, normalTabs, incogTabs].map((tabs, i) => (
             <TabPanel key={i}>
-              <OpenTabGroup tabs={tabs} searchQuery={initialSearchQuery} />
+              <OpenTabGroup tabs={tabs} />
             </TabPanel>
           ))}
         </TabPanels>
@@ -84,39 +64,18 @@ export const PopupPane = () => {
   );
 };
 
-const OpenTabGroup = ({
-  tabs,
-  searchQuery,
-}: {
-  tabs: TabType[];
-  searchQuery?: string;
-}) => {
+const OpenTabGroup = ({ tabs }: { tabs: TabType[] }) => {
   const stats = getTabsStats(tabs);
-  const [searchVisible, searchHandlers] = useBoolean(!!searchQuery);
-  const [searchEntry, setSearchEntry] = useState(searchQuery ?? '');
-  const debouncedQuery = useDebounce(searchEntry, 150);
-  const {
-    groupedTabs: groups,
-    sortOptions,
-    loading,
-  } = useFilteredTabs(tabs, debouncedQuery);
-  const [expandedSections, setExpandedSections] = useState<number[]>([]);
-
-  useEffect(() => {
-    if (loading || (sortOptions.tabFilterType === 'all' && !debouncedQuery)) {
-      setExpandedSections([]);
-    }
-  }, [sortOptions.tabFilterType, debouncedQuery]);
-
-  useEffect(() => {
-    if (!searchVisible) {
-      setSearchEntry('');
-    }
-  }, [searchVisible]);
+  const searchQuery = useStore((store) => store.query.query);
+  const setSearchQuery = useStore((store) => store.setSearchQuery);
+  const searchVisible = useStore((store) => store.searchVisible);
+  const groups = useStore((state) => state.groups);
+  const expandedSections = useStore((store) => store.expandedSections);
+  const toggleSection = useStore((store) => store.toggleSection);
 
   return (
     <div>
-      <TabGroupFilterSection searchHandlers={searchHandlers} stats={stats} />
+      <TabGroupFilterSection stats={stats} />
 
       {searchVisible && (
         <Input
@@ -125,9 +84,9 @@ const OpenTabGroup = ({
           aria-label="Search for a tab"
           placeholder="Enter a name or URL"
           mt={2}
-          value={searchEntry}
+          value={searchQuery}
           autoFocus
-          onChange={(e) => setSearchEntry(e.target.value)}
+          onChange={(e) => setSearchQuery(e.target.value)}
         />
       )}
 
@@ -137,7 +96,7 @@ const OpenTabGroup = ({
         mt={2}
         index={expandedSections}
         onChange={(index) => {
-          setExpandedSections(index as number[]);
+          toggleSection(index as number[]);
         }}
       >
         {groups.grouping === 'domain'
@@ -195,7 +154,9 @@ const GroupAccordionItem = ({
             <Menu isOpen={menuOpen}>
               <MenuButton as="span" />
               <MenuList ref={menuRef}>
-                <MenuItem onClick={() => onRemoveWindow?.()}>
+                <MenuItem
+                  onClick={(e) => (e.preventDefault(), onRemoveWindow?.())}
+                >
                   Close Window
                 </MenuItem>
               </MenuList>
@@ -211,26 +172,18 @@ const GroupAccordionItem = ({
 };
 
 const BrowserTabList = ({ tabs }: { tabs: TabType[] }) => {
-  const [focusedTabMenu, setFocusedTabMenu] = useState<TabType | null>(null);
   const currentWindow = useCurrentWindow();
 
   return (
     <div>
-      <TabItemMenuContext.Provider
-        value={{
-          tab: focusedTabMenu,
-          openTabMenu: (tab) => setFocusedTabMenu(tab),
-        }}
-      >
-        <List spacing={1}>
-          {tabs.map((tab, index) => (
-            <div key={tab.id}>
-              <TabItem tab={tab} currentWindow={currentWindow} />
-              {index !== tabs.length - 1 && <Divider />}
-            </div>
-          ))}
-        </List>
-      </TabItemMenuContext.Provider>
+      <List spacing={1}>
+        {tabs.map((tab, index) => (
+          <div key={tab.id}>
+            <TabItem tab={tab} currentWindow={currentWindow} />
+            {index !== tabs.length - 1 && <Divider />}
+          </div>
+        ))}
+      </List>
     </div>
   );
 };
