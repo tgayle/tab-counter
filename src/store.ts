@@ -8,7 +8,7 @@ import {
 import { Filters, TabFilterProcessor } from './action/TabFilterProcessor';
 import { GroupedTabType } from './hooks/useFilteredTabs';
 import settings from './settings';
-import { getTabInfo, Tab } from './tabutil';
+import { BrowserWindow, getCurrentWindow, getTabInfo, Tab } from './tabutil';
 
 enum ActiveTab {
   All,
@@ -17,31 +17,39 @@ enum ActiveTab {
 }
 
 type TabCounterState = {
-  allTabs: Tab[];
-  normalTabs: Tab[];
-  incognitoTabs: Tab[];
-  activeTab: ActiveTab;
-  query: Filters;
-  searchVisible: boolean;
-  toggleSearchVisible: () => void;
-  setActiveTab: (tab: ActiveTab) => void;
-  setSearchQuery: (query: string) => void;
-  setSearchVisible: (visible: boolean) => void;
-  groups: GroupedTabType;
+  state: {
+    currentWindow: BrowserWindow | null;
+    allTabs: Tab[];
+    normalTabs: Tab[];
+    incognitoTabs: Tab[];
+    query: Filters;
+    groups: GroupedTabType;
+    activeTab: ActiveTab;
 
-  expandedSections: number[];
-  toggleSection(indices: number[]): void;
-  setTabFilterType(type: TabFilterType): void;
-  setGroupSortBy(by: GroupSortOrder): void;
-  setTabGrouping(grouping: GroupTabsByOptions): void;
+    setActiveTab: (tab: ActiveTab) => void;
+    setSearchQuery: (query: string) => void;
+    setTabFilterType(type: TabFilterType): void;
+    setGroupSortBy(by: GroupSortOrder): void;
+    setTabGrouping(grouping: GroupTabsByOptions): void;
+  };
 
-  focusedTabMenu: Tab | null;
-  setFocusedTab(tab: Tab | null): void;
+  ui: {
+    searchVisible: boolean;
+    focusedTabMenu: Tab | null;
+    setFocusedTab(tab: Tab | null): void;
+    expandedSections: number[];
+
+    toggleSearchVisible: () => void;
+    setSearchVisible: (visible: boolean) => void;
+    toggleSection(indices: number[]): void;
+  };
 };
 
 export const useStore = create<TabCounterState>((set, getState) => {
   const refresh = async () => {
-    const { allTabs, incognitoTabs, normalTabs, activeTab } = getState();
+    const {
+      state: { allTabs, incognitoTabs, normalTabs, activeTab },
+    } = getState();
     const targetTabs =
       activeTab === ActiveTab.All
         ? allTabs
@@ -49,44 +57,52 @@ export const useStore = create<TabCounterState>((set, getState) => {
         ? normalTabs
         : incognitoTabs;
 
-    const res = await TabFilterProcessor.viaIpc.execute({
-      filters: getState().query,
+    const groups = await TabFilterProcessor.viaIpc.execute({
+      filters: getState().state.query,
       targetTabs,
     });
 
-    set(() => ({ groups: res }));
+    set(({ state }) => ({ state: { ...state, groups } }));
   };
 
   (async () => {
     await settings.loaded;
+    const currentWindow = await getCurrentWindow();
     const { groupSortBy, tabFilterType, tabGrouping, tabSortBy } =
       settings.current;
 
-    set(() => ({
-      query: {
-        query: '',
-        grouping: {
-          groupBy: tabGrouping,
-          sortBy: groupSortBy,
-        },
-        tabs: {
-          sortBy: tabSortBy,
-          type: tabFilterType,
+    set(({ state }) => ({
+      state: {
+        ...state,
+        currentWindow,
+        query: {
+          query: '',
+          grouping: {
+            groupBy: tabGrouping,
+            sortBy: groupSortBy,
+          },
+          tabs: {
+            sortBy: tabSortBy,
+            type: tabFilterType,
+          },
         },
       },
     }));
 
     settings.addListener((settings) => {
-      set((state) => ({
-        query: {
-          ...state.query,
-          grouping: {
-            groupBy: settings.tabGrouping,
-            sortBy: settings.groupSortBy,
-          },
-          tabs: {
-            sortBy: settings.tabSortBy,
-            type: settings.tabFilterType,
+      set(({ state }) => ({
+        state: {
+          ...state,
+          query: {
+            ...state.query,
+            grouping: {
+              groupBy: settings.tabGrouping,
+              sortBy: settings.groupSortBy,
+            },
+            tabs: {
+              sortBy: settings.tabSortBy,
+              type: settings.tabFilterType,
+            },
           },
         },
       }));
@@ -95,16 +111,20 @@ export const useStore = create<TabCounterState>((set, getState) => {
 
     const updateTabs = async () => {
       const { tabs: currentTabs } = await getTabInfo();
-      set((state) => ({
-        normalTabs: currentTabs.normal,
-        allTabs: currentTabs.all,
-        incognitoTabs: currentTabs.incognito,
-        activeTab:
-          state.activeTab === ActiveTab.Incog && !currentTabs.incognito.length
-            ? ActiveTab.All
-            : state.activeTab === ActiveTab.Normal && !currentTabs.normal.length
-            ? ActiveTab.All
-            : state.activeTab,
+      set(({ state }) => ({
+        state: {
+          ...state,
+          normalTabs: currentTabs.normal,
+          allTabs: currentTabs.all,
+          incognitoTabs: currentTabs.incognito,
+          activeTab:
+            state.activeTab === ActiveTab.Incog && !currentTabs.incognito.length
+              ? ActiveTab.All
+              : state.activeTab === ActiveTab.Normal &&
+                !currentTabs.normal.length
+              ? ActiveTab.All
+              : state.activeTab,
+        },
       }));
       refresh();
     };
@@ -117,88 +137,118 @@ export const useStore = create<TabCounterState>((set, getState) => {
   })();
 
   return {
-    query: {
-      query: '',
-      grouping: {
-        groupBy: GroupTabsByOptions.Domain,
-        sortBy: GroupSortOrder.Asc,
+    state: {
+      currentWindow: null,
+      query: {
+        query: '',
+        grouping: {
+          groupBy: GroupTabsByOptions.Domain,
+          sortBy: GroupSortOrder.Asc,
+        },
+        tabs: {
+          type: TabFilterType.All,
+          sortBy: TabSortOrder.Asc,
+        },
       },
-      tabs: {
-        type: TabFilterType.All,
-        sortBy: TabSortOrder.Asc,
+      allTabs: [],
+      activeTab: ActiveTab.All,
+      incognitoTabs: [],
+      normalTabs: [],
+      setSearchQuery: (query) => {
+        set(({ state }) => ({
+          state: { ...state, query: { ...state.query, query: query } },
+        }));
+        refresh();
       },
-    },
-    allTabs: [],
-    activeTab: ActiveTab.All,
-    incognitoTabs: [],
-    normalTabs: [],
-    searchVisible: false,
-    setSearchVisible: (visible) =>
-      set((state) => ({
-        searchVisible: visible,
-        query: { ...state.query, query: '' },
-      })),
-    toggleSearchVisible: () =>
-      set((state) => ({ searchVisible: !state.searchVisible })),
-    setActiveTab(tab) {
-      set(() => ({
-        activeTab: tab,
-        expandedSections: [],
-      }));
-    },
-    setSearchQuery: (query) => {
-      set((state) => ({ query: { ...state.query, query: query } }));
-      refresh();
-    },
-    expandedSections: [],
-    toggleSection: (indices) =>
-      set(() => {
-        return {
-          expandedSections: indices,
-        };
-      }),
-    groups: { allTabs: [], filteredTabs: [], grouping: 'domain' },
-    async setTabFilterType(newFilter) {
-      await settings.setTabFilterType(newFilter);
-      set((state) => {
-        return {
-          query: {
-            ...state.query,
-            tabs: {
-              ...state.query.tabs,
-              type: newFilter,
+      setTabGrouping: async (grouping) => {
+        await settings.setTabGrouping(grouping);
+        return set(({ state }) => ({
+          state: {
+            ...state,
+            query: {
+              ...state.query,
+              grouping: {
+                ...state.query.grouping,
+                groupBy: grouping,
+              },
             },
           },
-        };
-      });
+        }));
+      },
+      setGroupSortBy: async (by) => {
+        await settings.setGroupSortBy(by);
+        return set(({ state }) => ({
+          state: {
+            ...state,
+            query: {
+              ...state.query,
+              grouping: {
+                ...state.query.grouping,
+                sortBy: by,
+              },
+            },
+          },
+        }));
+      },
+      groups: { allTabs: [], filteredTabs: [], grouping: 'domain' },
+      async setTabFilterType(newFilter) {
+        await settings.setTabFilterType(newFilter);
+        set(({ state }) => ({
+          state: {
+            ...state,
+            query: {
+              ...state.query,
+              tabs: {
+                ...state.query.tabs,
+                type: newFilter,
+              },
+            },
+          },
+        }));
 
-      refresh();
-    },
-    focusedTabMenu: null,
-    setFocusedTab: (tab) => set(() => ({ focusedTabMenu: tab })),
-    setTabGrouping: async (grouping) => {
-      await settings.setTabGrouping(grouping);
-      return set((state) => ({
-        query: {
-          ...state.query,
-          grouping: {
-            ...state.query.grouping,
-            groupBy: grouping,
+        refresh();
+      },
+      setActiveTab(tab) {
+        set(({ state, ui }) => ({
+          state: {
+            ...state,
+            activeTab: tab,
           },
-        },
-      }));
-    },
-    setGroupSortBy: async (by) => {
-      await settings.setGroupSortBy(by);
-      return set((state) => ({
-        query: {
-          ...state.query,
-          grouping: {
-            ...state.query.grouping,
-            sortBy: by,
+          ui: {
+            ...ui,
+            expandedSections: [],
           },
-        },
-      }));
+        }));
+      },
+    },
+    ui: {
+      focusedTabMenu: null,
+      setFocusedTab: (tab) =>
+        set(({ ui }) => ({ ui: { ...ui, focusedTabMenu: tab } })),
+      expandedSections: [],
+      toggleSection: (indices) =>
+        set(({ ui }) => {
+          return {
+            ui: {
+              ...ui,
+              expandedSections: indices,
+            },
+          };
+        }),
+      searchVisible: false,
+      setSearchVisible: (visible) =>
+        set(({ state, ui }) => ({
+          state: {
+            ...state,
+            query: { ...state.query, query: '' },
+          },
+          ui: {
+            ...ui,
+            searchVisible: visible,
+          },
+        })),
+      toggleSearchVisible: () =>
+        set(({ ui }) => ({ ui: { ...ui, searchVisible: !ui.searchVisible } })),
     },
   };
 });

@@ -25,11 +25,11 @@ type Props = {
 };
 
 export function TabGroupFilterSection({ stats }: Props) {
-  const toggleSearchVisible = useStore((state) => state.toggleSearchVisible);
-  const setTabFilterType = useStore((state) => state.setTabFilterType);
-  const setTabGrouping = useStore((state) => state.setTabGrouping);
-  const setGroupSortBy = useStore((state) => state.setGroupSortBy);
-  const filters = useStore((state) => state.query);
+  const toggleSearchVisible = useStore(({ ui }) => ui.toggleSearchVisible);
+  const setTabFilterType = useStore(({ state }) => state.setTabFilterType);
+  const setTabGrouping = useStore(({ state }) => state.setTabGrouping);
+  const setGroupSortBy = useStore(({ state }) => state.setGroupSortBy);
+  const filters = useStore(({ state }) => state.query);
 
   return (
     <HStack spacing={2}>

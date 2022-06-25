@@ -23,7 +23,6 @@ import React, { useRef, useState } from 'react';
 import { getTabsStats } from '../../action/TabStats';
 import { TabItem } from '../../components/tab/TabItem';
 import { useContextMenu } from '../../hooks/useContextMenu';
-import { useCurrentWindow } from '../../hooks/useCurrentWindow';
 import { useTabInfo } from '../../hooks/useTabInfo';
 import { useStore } from '../../store';
 import { closeWindow, Tab as TabType } from '../../tabutil';
@@ -32,8 +31,8 @@ import { TabGroupFilterSection } from './GroupFilterSection';
 export const PopupPane = () => {
   const { tabs, loading } = useTabInfo();
   const { all: allTabs, incognito: incogTabs, normal: normalTabs } = tabs;
-  const selectedTab = useStore((state) => state.activeTab);
-  const setSelectedTab = useStore((state) => state.setActiveTab);
+  const selectedTab = useStore((state) => state.state.activeTab);
+  const setSelectedTab = useStore((state) => state.state.setActiveTab);
   const tabTitles = [
     `All (${allTabs.length})`,
     normalTabs.length && incogTabs.length
@@ -66,12 +65,12 @@ export const PopupPane = () => {
 
 const OpenTabGroup = ({ tabs }: { tabs: TabType[] }) => {
   const stats = getTabsStats(tabs);
-  const searchQuery = useStore((store) => store.query.query);
-  const setSearchQuery = useStore((store) => store.setSearchQuery);
-  const searchVisible = useStore((store) => store.searchVisible);
-  const groups = useStore((state) => state.groups);
-  const expandedSections = useStore((store) => store.expandedSections);
-  const toggleSection = useStore((store) => store.toggleSection);
+  const groups = useStore(({ state }) => state.groups);
+  const searchQuery = useStore(({ state: { query } }) => query.query);
+  const setSearchQuery = useStore(({ state }) => state.setSearchQuery);
+  const searchVisible = useStore(({ ui }) => ui.searchVisible);
+  const expandedSections = useStore(({ ui }) => ui.expandedSections);
+  const toggleSection = useStore(({ ui }) => ui.toggleSection);
 
   return (
     <div>
@@ -172,14 +171,12 @@ const GroupAccordionItem = ({
 };
 
 const BrowserTabList = ({ tabs }: { tabs: TabType[] }) => {
-  const currentWindow = useCurrentWindow();
-
   return (
     <div>
       <List spacing={1}>
         {tabs.map((tab, index) => (
           <div key={tab.id}>
-            <TabItem tab={tab} currentWindow={currentWindow} />
+            <TabItem tab={tab} />
             {index !== tabs.length - 1 && <Divider />}
           </div>
         ))}

@@ -17,7 +17,6 @@ import { MdOpenInNew } from 'react-icons/md';
 import { useContextMenu } from '../../hooks/useContextMenu';
 import { useStore } from '../../store';
 import {
-  BrowserWindow,
   closeTab,
   focusTab,
   moveTabToWindow,
@@ -25,13 +24,8 @@ import {
   Tab,
 } from '../../tabutil';
 
-export const TabItem = ({
-  tab,
-  currentWindow,
-}: {
-  tab: Tab;
-  currentWindow: BrowserWindow | null;
-}) => {
+export const TabItem = ({ tab }: { tab: Tab }) => {
+  const currentWindow = useStore(({ state }) => state.currentWindow);
   const canMoveTabToWindow =
     (currentWindow?.incognito === tab.incognito &&
       tab.windowId !== currentWindow?.id) ||
@@ -39,8 +33,8 @@ export const TabItem = ({
   const canSwitchToTab = !(tab.active && tab.windowId === currentWindow?.id);
   const buttonEnabled = canSwitchToTab || canMoveTabToWindow;
 
-  const activeTabMenu = useStore((state) => state.focusedTabMenu);
-  const openTabMenu = useStore((state) => state.setFocusedTab);
+  const activeTabMenu = useStore(({ ui }) => ui.focusedTabMenu);
+  const openTabMenu = useStore(({ ui }) => ui.setFocusedTab);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const menuOpen = activeTabMenu === tab;
