@@ -13,7 +13,7 @@ export function useContextMenu({
   enabled: boolean;
   onOpen: () => void;
   onClose: () => void;
-}) {
+}): void {
   useOutsideClick({
     ref: menuRef,
     handler: onClose,

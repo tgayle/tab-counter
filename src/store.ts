@@ -35,7 +35,7 @@ type TabCounterState = {
 
   ui: {
     searchVisible: boolean;
-    focusedTabMenu: Tab | null;
+    focusedTabMenu: number | null;
     setFocusedTab(tab: Tab | null): void;
     expandedSections: number[];
 
@@ -224,7 +224,7 @@ export const useStore = create<TabCounterState>((set, getState) => {
     ui: {
       focusedTabMenu: null,
       setFocusedTab: (tab) =>
-        set(({ ui }) => ({ ui: { ...ui, focusedTabMenu: tab } })),
+        set(({ ui }) => ({ ui: { ...ui, focusedTabMenu: tab?.id ?? null } })),
       expandedSections: [],
       toggleSection: (indices) =>
         set(({ ui }) => {

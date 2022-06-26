@@ -37,7 +37,8 @@ export const TabItem = ({ tab }: { tab: Tab }) => {
   const openTabMenu = useStore(({ ui }) => ui.setFocusedTab);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
-  const menuOpen = activeTabMenu === tab;
+  const menuOpen = activeTabMenu === tab.id;
+
   useContextMenu({
     menuRef,
     enabled: buttonEnabled,
