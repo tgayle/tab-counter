@@ -23,7 +23,7 @@ import { getTabsStats } from '../../action/TabStats';
 import { TabItem } from '../../components/tab/TabItem';
 import { useContextMenu } from '../../hooks/useContextMenu';
 import { useStore } from '../../store';
-import { closeWindow, Tab as TabType } from '../../tabutil';
+import { closeTab, closeWindow, Tab as TabType } from '../../tabutil';
 import { TabGroupFilterSection } from './GroupFilterSection';
 
 export const PopupPane = () => {
@@ -99,7 +99,14 @@ const OpenTabGroup = ({ tabs }: { tabs: TabType[] }) => {
       >
         {groups.grouping === 'domain'
           ? groups.filteredTabs.map(({ domain, tabs }) => (
-              <GroupAccordionItem title={domain} tabs={tabs} key={domain} />
+              <GroupAccordionItem
+                title={domain}
+                tabs={tabs}
+                key={domain}
+                hasMenu
+                removeGroupText="Close All"
+                onRemoveGroup={() => closeTab(...tabs)}
+              />
             ))
           : groups.grouping === 'window'
           ? groups.filteredTabs.map(({ window, tabs }) => (
@@ -107,8 +114,9 @@ const OpenTabGroup = ({ tabs }: { tabs: TabType[] }) => {
                 title={tabs.find((it) => it.active)?.title ?? `#${window.id}`}
                 tabs={tabs}
                 key={window.id}
-                hasWindowMenu
-                onRemoveWindow={() => closeWindow(window)}
+                hasMenu
+                onRemoveGroup={() => closeWindow(window)}
+                removeGroupText="Close Window"
               />
             ))
           : `how did you get here? (grouping=${JSON.stringify(groups)})`}
@@ -120,13 +128,15 @@ const OpenTabGroup = ({ tabs }: { tabs: TabType[] }) => {
 const GroupAccordionItem = ({
   title,
   tabs,
-  hasWindowMenu,
-  onRemoveWindow,
+  hasMenu,
+  onRemoveGroup,
+  removeGroupText = 'Close Window',
 }: {
   title: string;
   tabs: TabType[];
-  hasWindowMenu?: boolean;
-  onRemoveWindow?: () => void;
+  hasMenu?: boolean;
+  onRemoveGroup?: () => void;
+  removeGroupText?: string;
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -135,7 +145,7 @@ const GroupAccordionItem = ({
     onOpen: () => setMenuOpen(true),
     onClose: () => setMenuOpen(false),
     buttonRef,
-    enabled: !!hasWindowMenu,
+    enabled: !!hasMenu,
     menuRef,
   });
 
@@ -153,9 +163,9 @@ const GroupAccordionItem = ({
               <MenuButton as="span" />
               <MenuList ref={menuRef}>
                 <MenuItem
-                  onClick={(e) => (e.preventDefault(), onRemoveWindow?.())}
+                  onClick={(e) => (e.preventDefault(), onRemoveGroup?.())}
                 >
-                  Close Window
+                  {removeGroupText}
                 </MenuItem>
               </MenuList>
             </Menu>

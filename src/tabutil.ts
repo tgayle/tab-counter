@@ -39,7 +39,7 @@ export async function getTabInfo(): Promise<TabInfo> {
   };
 }
 
-export async function focusTab(tab: Tab, switchToWindow: boolean = true) {
+export async function focusTab(tab: Tab, switchToWindow = true): Promise<void> {
   const currentWindow = await getCurrentWindow();
   await chrome.tabs.update(tab.id!, { active: true });
   if (switchToWindow && currentWindow.id !== tab.windowId) {
@@ -53,7 +53,7 @@ export async function moveTabToWindow(
   tab: Tab,
   window: chrome.windows.Window,
   shouldFocusTab = true,
-) {
+): Promise<void> {
   await chrome.tabs.move(tab.id!, { index: -1, windowId: window.id! });
 
   if (shouldFocusTab) {
@@ -63,13 +63,13 @@ export async function moveTabToWindow(
 
 let currentWindowId: number | null = null;
 
-export function setCurrentWindow(id: number | null) {
+export function setCurrentWindow(id: number | null): void {
   if (typeof window !== 'undefined')
     throw new Error('dont call this from popup context.');
   currentWindowId = id;
 }
 
-export async function getCurrentWindow() {
+export async function getCurrentWindow(): Promise<BrowserWindow> {
   if (typeof window !== 'undefined') {
     return await chrome.windows.getCurrent();
   }
@@ -85,11 +85,11 @@ export async function getCurrentWindow() {
   return await chrome.windows.get(currentWindowId);
 }
 
-export async function getCurrentTab() {
+export async function getCurrentTab(): Promise<Tab> {
   return (await chrome.tabs.query({ active: true, currentWindow: true }))[0];
 }
 
-export async function reopenIncognitoTab(tab: Tab) {
+export async function reopenIncognitoTab(tab: Tab): Promise<void> {
   const currentWindow = await getCurrentWindow();
   const normalWindow = !currentWindow.incognito
     ? currentWindow
@@ -112,10 +112,12 @@ export async function reopenIncognitoTab(tab: Tab) {
   await chrome.tabs.remove(tab.id!);
 }
 
-export async function closeTab(tab: Tab) {
-  await chrome.tabs.remove(tab.id!);
+export async function closeTab(...tabs: Tab[]): Promise<void> {
+  await chrome.tabs.remove(tabs.map((tab) => tab.id ?? -1));
 }
 
-export async function closeWindow(window: chrome.windows.Window) {
+export async function closeWindow(
+  window: chrome.windows.Window,
+): Promise<void> {
   await chrome.windows.remove(window.id!);
 }
