@@ -45,7 +45,7 @@ export function filterDuplicateTabs(
 export function groupAndFilterDuplicateTabs(
   tabs: Tab[],
   policy: DuplicatePolicy,
-) {
+): Tab[] {
   const tabsByBaseUrl: Record<string, { tab: Tab; url: URL }[]> = {};
   for (const tab of tabs) {
     if (!tab.url) continue;
@@ -74,7 +74,7 @@ export function groupAndFilterDuplicateTabs(
 export async function findDuplicateTabs(
   tabOrUrl: Tab | string,
   duplicatePolicy: DuplicatePolicy = DuplicatePolicy.Presets,
-) {
+): Promise<Tab[]> {
   const allTabs = await getTabInfo();
 
   let url: string;
