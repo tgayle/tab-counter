@@ -9,7 +9,7 @@ const hash = buildHashCmd.stdout.toString().trim();
 
 const manifest = defineManifest({
   name: 'Tab Counter',
-  description: `Keeps count of your open tabs and windows. (${hash})`,
+  description: `Keeps count of your open tabs and windows`,
   manifest_version: 3,
   version_name: hash,
   version: '1.0.0',
@@ -27,6 +27,11 @@ const manifest = defineManifest({
         default: 'Alt+T',
       },
     },
+  },
+  icons: {
+    16: 'icons/16.png',
+    48: 'icons/48.png',
+    128: 'icons/128.png',
   },
 });
 
