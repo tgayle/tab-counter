@@ -1,5 +1,6 @@
 import { defineManifest } from '@crxjs/vite-plugin';
 import { spawnSync } from 'child_process';
+import { version } from '../package.json';
 
 const buildHashCmd = spawnSync(
   'git',
@@ -12,7 +13,7 @@ const manifest = defineManifest({
   description: `Keeps count of your open tabs and windows`,
   manifest_version: 3,
   version_name: hash,
-  version: '1.0.1',
+  version: version,
   permissions: ['tabs', 'storage', 'contextMenus'],
   background: {
     service_worker: 'src/background.ts',

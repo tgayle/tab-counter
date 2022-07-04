@@ -11,7 +11,8 @@
     "noEmit": true,
     "strict": true,
     "target": "ES2018",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "resolveJsonModule": true
   },
   "include": ["src/", "vite.config.ts"]
 }
