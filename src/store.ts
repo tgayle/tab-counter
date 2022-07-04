@@ -219,6 +219,7 @@ export const useStore = create<TabCounterState>((set, getState) => {
             expandedSections: [],
           },
         }));
+        refresh();
       },
     },
     ui: {
