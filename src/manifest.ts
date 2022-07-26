@@ -8,8 +8,10 @@ const buildHashCmd = spawnSync(
 );
 const hash = buildHashCmd.stdout.toString().trim();
 
+const devMode = process.env.NODE_ENV === 'development';
+
 const manifest = defineManifest({
-  name: 'Tab Counter',
+  name: `Tab Counter${devMode ? ' (Dev)' : ''}`,
   description: `Keeps count of your open tabs and windows`,
   manifest_version: 3,
   version_name: hash,
@@ -29,11 +31,13 @@ const manifest = defineManifest({
       },
     },
   },
-  icons: {
-    16: 'icons/16.png',
-    48: 'icons/48.png',
-    128: 'icons/128.png',
-  },
+  icons: !devMode // Hide icon in dev mode for distinction.
+    ? {
+        16: 'icons/16.png',
+        48: 'icons/48.png',
+        128: 'icons/128.png',
+      }
+    : undefined,
 });
 
 export default manifest;
