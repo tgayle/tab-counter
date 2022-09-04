@@ -121,3 +121,7 @@ export async function closeWindow(
 ): Promise<void> {
   await chrome.windows.remove(window.id!);
 }
+
+export async function getAllWindows() {
+  return await chrome.windows.getAll();
+}
