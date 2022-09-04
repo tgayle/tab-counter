@@ -1,30 +1,12 @@
-import {
-  Tabs,
-  TabList,
-  Text,
-  Tab,
-  TabPanels,
-  TabPanel,
-  List,
-  Input,
-  Divider,
-  Accordion,
-  AccordionItem,
-  AccordionPanel,
-  AccordionButton,
-  AccordionIcon,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-} from '@chakra-ui/react';
+import { Menu, MenuButton, MenuList, MenuItem } from '@chakra-ui/react';
 import React, { useRef, useState } from 'react';
-import { getTabsStats } from '../../action/TabStats';
 import { TabItem } from '../../components/tab/TabItem';
 import { useContextMenu } from '../../hooks/useContextMenu';
 import { useStore } from '../../store';
 import { closeTab, closeWindow, Tab as TabType } from '../../tabutil';
 import { TabGroupFilterSection } from './GroupFilterSection';
+import { MdChevronLeft } from 'react-icons/md';
+import clsx from 'clsx';
 
 export const PopupPane = () => {
   const selectedTab = useStore((state) => state.state.activeTab);
@@ -43,27 +25,32 @@ export const PopupPane = () => {
 
   return (
     <div style={{ width: '350px', maxWidth: '350px' }}>
-      <Tabs isLazy index={selectedTab} onChange={setSelectedTab}>
-        <TabList>
-          {tabTitles.map((title) =>
-            title ? <Tab key={title}>{title}</Tab> : null,
-          )}
-        </TabList>
+      <div className="tabs">
+        {tabTitles.map((title, index) =>
+          title ? (
+            <button
+              key={index}
+              className={clsx(
+                'tab',
+                'tab-lifted',
+                selectedTab === index && 'tab-active',
+              )}
+              onClick={() => setSelectedTab(index)}
+            >
+              {title}
+            </button>
+          ) : null,
+        )}
+      </div>
 
-        <TabPanels>
-          {[allTabs, normalTabs, incogTabs].map((tabs, i) => (
-            <TabPanel key={i}>
-              <OpenTabGroup tabs={tabs} />
-            </TabPanel>
-          ))}
-        </TabPanels>
-      </Tabs>
+      <main className="m-2">
+        <OpenTabGroup />
+      </main>
     </div>
   );
 };
 
-const OpenTabGroup = ({ tabs }: { tabs: TabType[] }) => {
-  const stats = getTabsStats(tabs);
+const OpenTabGroup = () => {
   const groups = useStore(({ state }) => state.groups);
   const searchQuery = useStore(({ state: { query } }) => query.query);
   const setSearchQuery = useStore(({ state }) => state.setSearchQuery);
@@ -73,54 +60,49 @@ const OpenTabGroup = ({ tabs }: { tabs: TabType[] }) => {
 
   return (
     <div>
-      <TabGroupFilterSection stats={stats} />
+      <TabGroupFilterSection />
 
       {searchVisible && (
-        <Input
-          size="sm"
-          width="full"
+        <input
+          type="text"
+          className="input w-full input-bordered input-sm mt-2"
           aria-label="Search for a tab"
-          placeholder="Enter a name or URL"
-          mt={2}
+          placeholder="Search"
           value={searchQuery}
           autoFocus
           onChange={(e) => setSearchQuery(e.target.value)}
         />
       )}
 
-      <Accordion
-        allowMultiple
-        allowToggle
-        mt={2}
-        index={expandedSections}
-        onChange={(index) => {
-          toggleSection(index as number[]);
-        }}
-      >
-        {groups.grouping === 'domain'
-          ? groups.filteredTabs.map(({ domain, tabs }) => (
+      <div className="divide-y">
+        {groups.type === 'domain'
+          ? groups.results.map(({ tabs, origin, rule, displayName }, index) => (
               <GroupAccordionItem
-                title={domain}
+                title={displayName ?? origin}
                 tabs={tabs}
-                key={domain}
+                key={rule?.id}
+                open={expandedSections.has(rule?.id ?? index)}
                 hasMenu
+                onOpen={() => toggleSection(rule?.id ?? index)}
                 removeGroupText="Close All"
                 onRemoveGroup={() => closeTab(...tabs)}
               />
             ))
-          : groups.grouping === 'window'
-          ? groups.filteredTabs.map(({ window, tabs }) => (
+          : groups.type === 'window'
+          ? groups.results.map(({ window, tabs }, index) => (
               <GroupAccordionItem
                 title={tabs.find((it) => it.active)?.title ?? `#${window.id}`}
                 tabs={tabs}
                 key={window.id}
                 hasMenu
+                open={expandedSections.has(window.id ?? index)}
+                onOpen={() => toggleSection(window.id ?? index)}
                 onRemoveGroup={() => closeWindow(window)}
                 removeGroupText="Close Window"
               />
             ))
           : `how did you get here? (grouping=${JSON.stringify(groups)})`}
-      </Accordion>
+      </div>
     </div>
   );
 };
@@ -130,17 +112,21 @@ const GroupAccordionItem = ({
   tabs,
   hasMenu,
   onRemoveGroup,
+  open,
   removeGroupText = 'Close Window',
+  onOpen,
 }: {
   title: string;
   tabs: TabType[];
   hasMenu?: boolean;
   onRemoveGroup?: () => void;
   removeGroupText?: string;
+  open?: boolean;
+  onOpen?(): void;
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
-  const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const buttonRef = useRef<HTMLDivElement | null>(null);
   useContextMenu({
     onOpen: () => setMenuOpen(true),
     onClose: () => setMenuOpen(false),
@@ -150,46 +136,48 @@ const GroupAccordionItem = ({
   });
 
   return (
-    <AccordionItem>
-      {({ isExpanded }) => (
-        <>
-          <AccordionButton ref={buttonRef}>
-            <Text flex={1} noOfLines={1} title={title} textAlign="start">
-              {title}
-            </Text>
-            <span>({tabs.length})</span>
-            <AccordionIcon ml={2} />
-            <Menu isOpen={menuOpen}>
-              <MenuButton as="span" />
-              <MenuList ref={menuRef}>
-                <MenuItem
-                  onClick={(e) => (e.preventDefault(), onRemoveGroup?.())}
-                >
-                  {removeGroupText}
-                </MenuItem>
-              </MenuList>
-            </Menu>
-          </AccordionButton>
-          <AccordionPanel pb={0}>
-            {isExpanded && <BrowserTabList tabs={tabs} />}
-          </AccordionPanel>
-        </>
-      )}
-    </AccordionItem>
+    <div>
+      <div
+        className="text-base flex font-medium p-2 items-center cursor-pointer hover:bg-gray-200 transition-colors"
+        ref={buttonRef}
+        onClick={onOpen}
+      >
+        <span className="grow truncate" title={title}>
+          {title}
+        </span>
+
+        <span className="flex items-center gap-2 pl-2">
+          <span>({tabs.length})</span>
+          <MdChevronLeft
+            size={24}
+            className={
+              'transition-transform ' + (open ? 'rotate-90' : '-rotate-90')
+            }
+          />
+        </span>
+
+        <Menu isOpen={menuOpen}>
+          <MenuButton as="span" />
+          <MenuList ref={menuRef}>
+            <MenuItem onClick={(e) => (e.preventDefault(), onRemoveGroup?.())}>
+              {removeGroupText}
+            </MenuItem>
+          </MenuList>
+        </Menu>
+      </div>
+      <div>{open && <BrowserTabList tabs={tabs} />}</div>
+    </div>
   );
 };
 
 const BrowserTabList = ({ tabs }: { tabs: TabType[] }) => {
   return (
-    <div>
-      <List spacing={1}>
-        {tabs.map((tab, index) => (
-          <div key={tab.id}>
-            <TabItem tab={tab} />
-            {index !== tabs.length - 1 && <Divider />}
-          </div>
-        ))}
-      </List>
+    <div className="divide-y">
+      {tabs.map((tab) => (
+        <div key={tab.id}>
+          <TabItem tab={tab} />
+        </div>
+      ))}
     </div>
   );
 };

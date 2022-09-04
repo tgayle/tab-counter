@@ -1,18 +1,5 @@
-import {
-  IconButton,
-  HStack,
-  Menu,
-  MenuButton,
-  MenuItemOption,
-  MenuList,
-  MenuOptionGroup,
-  Spacer,
-  Box,
-  Select,
-} from '@chakra-ui/react';
 import React, { ReactNode } from 'react';
 import { MdSearch, MdSort } from 'react-icons/md';
-import { TabStats } from '../../action/TabStats';
 import {
   TabFilterType,
   GroupTabsByOptions,
@@ -20,11 +7,8 @@ import {
 } from '../../action/TabFilter';
 import { useStore } from '../../store';
 
-type Props = {
-  stats: TabStats;
-};
-
-export function TabGroupFilterSection({ stats }: Props) {
+export function TabGroupFilterSection() {
+  const stats = useStore(({ state }) => state.groups.stats);
   const toggleSearchVisible = useStore(({ ui }) => ui.toggleSearchVisible);
   const setTabFilterType = useStore(({ state }) => state.setTabFilterType);
   const setTabGrouping = useStore(({ state }) => state.setTabGrouping);
@@ -32,8 +16,9 @@ export function TabGroupFilterSection({ stats }: Props) {
   const filters = useStore(({ state }) => state.query);
 
   return (
-    <HStack spacing={2}>
-      <Select
+    <div className="flex gap-2">
+      <select
+        className="select select-bordered select-sm grow h-4"
         value={filters.tabs.type}
         onChange={(e) => {
           if (Object.values(TabFilterType).includes(e.target.value as any)) {
@@ -57,63 +42,19 @@ export function TabGroupFilterSection({ stats }: Props) {
         >
           Duplicates
         </FilterSelectOption>
-      </Select>
+      </select>
 
-      <Spacer />
+      <div className="p-1 border rounded-md" onClick={toggleSearchVisible}>
+        <MdSearch aria-label="Search tabs" className="p-1" size={24} />
+      </div>
 
-      <IconButton
-        aria-label="Search tabs"
-        size="sm"
-        icon={<MdSearch />}
-        variant="outline"
-        onClick={toggleSearchVisible}
+      <FilterDropdown
+        groupBy={filters.grouping.groupBy}
+        sortBy={filters.grouping.sortBy}
+        onChangeGroupBy={(groupBy) => setTabGrouping(groupBy)}
+        onChangeSortOrder={(sortBy) => setGroupSortBy(sortBy)}
       />
-
-      <Box>
-        <Menu closeOnSelect={false}>
-          <MenuButton
-            size="sm"
-            as={IconButton}
-            aria-label="Sort Order"
-            icon={<MdSort />}
-            variant="outline"
-          />
-
-          <MenuList>
-            <MenuOptionGroup
-              defaultValue="count"
-              title="Order"
-              type="radio"
-              value={filters.grouping.sortBy}
-              onChange={(choice) => setGroupSortBy(choice as GroupSortOrder)}
-            >
-              <MenuItemOption value={GroupSortOrder.Count}>
-                Count
-              </MenuItemOption>
-              <MenuItemOption value={GroupSortOrder.Asc}>
-                Ascending
-              </MenuItemOption>
-              <MenuItemOption value={GroupSortOrder.Desc}>
-                Descending
-              </MenuItemOption>
-            </MenuOptionGroup>
-
-            {
-              <MenuOptionGroup
-                title="Group by"
-                onChange={(option) =>
-                  setTabGrouping(option as GroupTabsByOptions)
-                }
-                value={filters.grouping.groupBy}
-              >
-                <MenuItemOption value="domain">Domain</MenuItemOption>
-                <MenuItemOption value="window">Window</MenuItemOption>
-              </MenuOptionGroup>
-            }
-          </MenuList>
-        </Menu>
-      </Box>
-    </HStack>
+    </div>
   );
 }
 
@@ -132,3 +73,82 @@ function FilterSelectOption({
     </option>
   );
 }
+
+const SortOrderOptions = [
+  { label: 'Count', value: GroupSortOrder.Count },
+  { label: 'Ascending', value: GroupSortOrder.Asc },
+  { label: 'Descending', value: GroupSortOrder.Desc },
+];
+
+const GroupByOptions = [
+  { label: 'Domain', value: GroupTabsByOptions.Domain },
+  { label: 'Window', value: GroupTabsByOptions.Window },
+];
+
+function FilterDropdown({
+  groupBy,
+  sortBy,
+  onChangeGroupBy,
+  onChangeSortOrder,
+}: {
+  groupBy: GroupTabsByOptions;
+  sortBy: GroupSortOrder;
+  onChangeSortOrder: (order: GroupSortOrder) => void;
+  onChangeGroupBy: (groupBy: GroupTabsByOptions) => void;
+}) {
+  return (
+    <div className="dropdown dropdown-end">
+      <div tabIndex={0} className="border p-1 rounded-md">
+        <MdSort size={24} />
+      </div>
+
+      <ul
+        tabIndex={0}
+        className="dropdown-content menu rounded-box w-32 shadow-lg bg-base-100"
+      >
+        <li className="menu-title">
+          <span>Order</span>
+        </li>
+        {SortOrderOptions.map((option) => (
+          <FilterMenuItem
+            selected={sortBy === option.value}
+            key={option.value}
+            onClick={() => onChangeSortOrder(option.value)}
+          >
+            {option.label}
+          </FilterMenuItem>
+        ))}
+
+        <li className="menu-title">
+          <span>Group By</span>
+        </li>
+
+        {GroupByOptions.map((option) => (
+          <FilterMenuItem
+            selected={groupBy === option.value}
+            key={option.value}
+            onClick={() => onChangeGroupBy(option.value)}
+          >
+            {option.label}
+          </FilterMenuItem>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+const FilterMenuItem = ({
+  selected,
+  children,
+  onClick,
+}: {
+  selected?: boolean;
+  children: ReactNode;
+  onClick?: () => void;
+}) => {
+  return (
+    <li className={selected ? 'bordered' : ''} onClick={onClick}>
+      <a>{children}</a>
+    </li>
+  );
+};

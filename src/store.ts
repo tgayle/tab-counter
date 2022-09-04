@@ -1,12 +1,13 @@
-import create from 'zustand';
+import create, { StateCreator } from 'zustand';
+import { TabGrouper, TabGroupResult } from './action/grouping/TabGrouper';
 import {
   GroupSortOrder,
   GroupTabsByOptions,
   TabFilterType,
   TabSortOrder,
 } from './action/TabFilter';
-import { Filters, TabFilterProcessor } from './action/TabFilterProcessor';
-import { GroupedTabType } from './hooks/useFilteredTabs';
+import { Filters } from './action/TabFilterProcessor';
+import { TabStats } from './action/TabStats';
 import settings from './settings';
 import { BrowserWindow, getCurrentWindow, getTabInfo, Tab } from './tabutil';
 
@@ -16,15 +17,26 @@ enum ActiveTab {
   Incog,
 }
 
-type TabCounterState = {
+type UiSlice = {
+  ui: {
+    searchVisible: boolean;
+    expandedSections: Set<string | number>;
+    toggleSearchVisible: () => void;
+    setSearchVisible: (visible: boolean) => void;
+    toggleSection(index: string | number): void;
+  };
+};
+
+type StateSlice = {
   state: {
     currentWindow: BrowserWindow | null;
     allTabs: Tab[];
     normalTabs: Tab[];
     incognitoTabs: Tab[];
     query: Filters;
-    groups: GroupedTabType;
+    groups: TabGroupResult;
     activeTab: ActiveTab;
+    stats: TabStats;
 
     setActiveTab: (tab: ActiveTab) => void;
     setSearchQuery: (query: string) => void;
@@ -32,23 +44,61 @@ type TabCounterState = {
     setGroupSortBy(by: GroupSortOrder): void;
     setTabGrouping(grouping: GroupTabsByOptions): void;
   };
-
-  ui: {
-    searchVisible: boolean;
-    focusedTabMenu: number | null;
-    setFocusedTab(tab: Tab | null): void;
-    expandedSections: number[];
-
-    toggleSearchVisible: () => void;
-    setSearchVisible: (visible: boolean) => void;
-    toggleSection(indices: number[]): void;
-  };
 };
 
-export const useStore = create<TabCounterState>((set, getState) => {
+type TabCounterState = StateSlice & UiSlice;
+
+const createUiSlice: StateCreator<TabCounterState, [], [], UiSlice> = (
+  set,
+) => ({
+  ui: {
+    expandedSections: new Set(),
+    toggleSection: (id: string | number) =>
+      set(({ ui }) => {
+        const expandedSections = new Set(ui.expandedSections);
+        if (expandedSections.has(id)) {
+          expandedSections.delete(id);
+        } else {
+          expandedSections.add(id);
+        }
+        return {
+          ui: {
+            ...ui,
+            expandedSections: expandedSections,
+          },
+        };
+      }),
+    searchVisible: false,
+    setSearchVisible: (visible) =>
+      set(({ state, ui }) => ({
+        state: {
+          ...state,
+          query: { ...state.query, query: '' },
+        },
+        ui: {
+          ...ui,
+          searchVisible: visible,
+        },
+      })),
+    toggleSearchVisible: () =>
+      set(({ ui }) => ({ ui: { ...ui, searchVisible: !ui.searchVisible } })),
+  },
+});
+
+const createStateSlice: StateCreator<TabCounterState, [], [], StateSlice> = (
+  set,
+  getState,
+) => {
   const refresh = async () => {
     const {
-      state: { allTabs, incognitoTabs, normalTabs, activeTab },
+      state: {
+        allTabs,
+        incognitoTabs,
+        normalTabs,
+        activeTab,
+        currentWindow,
+        query: filters,
+      },
     } = getState();
     const targetTabs =
       activeTab === ActiveTab.All
@@ -57,11 +107,12 @@ export const useStore = create<TabCounterState>((set, getState) => {
         ? normalTabs
         : incognitoTabs;
 
-    const groups = await TabFilterProcessor.viaIpc.execute({
-      filters: getState().state.query,
-      targetTabs,
-    });
+    grouper.windowId = currentWindow?.id ?? -1;
 
+    const groups =
+      filters.grouping.groupBy === GroupTabsByOptions.Domain
+        ? grouper.filterByRules(targetTabs, filters)
+        : await grouper.filterByWindows(targetTabs, filters);
     set(({ state }) => ({ state: { ...state, groups } }));
   };
 
@@ -150,10 +201,16 @@ export const useStore = create<TabCounterState>((set, getState) => {
           sortBy: TabSortOrder.Asc,
         },
       },
+      stats: {
+        audible: [],
+        duplicates: [],
+        muted: [],
+      },
       allTabs: [],
       activeTab: ActiveTab.All,
       incognitoTabs: [],
       normalTabs: [],
+
       setSearchQuery: (query) => {
         set(({ state }) => ({
           state: { ...state, query: { ...state.query, query: query } },
@@ -190,7 +247,11 @@ export const useStore = create<TabCounterState>((set, getState) => {
           },
         }));
       },
-      groups: { allTabs: [], filteredTabs: [], grouping: 'domain' },
+      groups: {
+        results: [],
+        stats: { audible: [], duplicates: [], muted: [] },
+        type: 'window',
+      },
       async setTabFilterType(newFilter) {
         await settings.setTabFilterType(newFilter);
         set(({ state }) => ({
@@ -216,40 +277,18 @@ export const useStore = create<TabCounterState>((set, getState) => {
           },
           ui: {
             ...ui,
-            expandedSections: [],
+            expandedSections: new Set(),
           },
         }));
-        refresh();
+        // refresh();
       },
     },
-    ui: {
-      focusedTabMenu: null,
-      setFocusedTab: (tab) =>
-        set(({ ui }) => ({ ui: { ...ui, focusedTabMenu: tab?.id ?? null } })),
-      expandedSections: [],
-      toggleSection: (indices) =>
-        set(({ ui }) => {
-          return {
-            ui: {
-              ...ui,
-              expandedSections: indices,
-            },
-          };
-        }),
-      searchVisible: false,
-      setSearchVisible: (visible) =>
-        set(({ state, ui }) => ({
-          state: {
-            ...state,
-            query: { ...state.query, query: '' },
-          },
-          ui: {
-            ...ui,
-            searchVisible: visible,
-          },
-        })),
-      toggleSearchVisible: () =>
-        set(({ ui }) => ({ ui: { ...ui, searchVisible: !ui.searchVisible } })),
-    },
   };
-});
+};
+
+const grouper = new TabGrouper();
+
+export const useStore = create<TabCounterState>((...a) => ({
+  ...createUiSlice(...a),
+  ...createStateSlice(...a),
+}));
