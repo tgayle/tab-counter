@@ -35,10 +35,10 @@ class Settings {
 
   get current(): FilterSettings {
     return {
-      groupSortBy: this.groupSortBy,
-      tabFilterType: this.tabFilterType,
-      tabGrouping: this.tabGrouping,
-      tabSortBy: this.tabSortBy,
+      groupSortBy: this.groupSortBy ?? GroupSortOrder.Asc,
+      tabFilterType: this.tabFilterType ?? TabFilterType.All,
+      tabGrouping: this.tabGrouping ?? GroupTabsByOptions.Domain,
+      tabSortBy: this.tabSortBy ?? TabSortOrder.Asc,
     };
   }
 
