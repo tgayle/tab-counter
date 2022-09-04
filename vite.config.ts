@@ -11,7 +11,7 @@ export default defineConfig({
   },
   plugins: [
     react(),
-    chromeExtension({ manifest, contentScripts: { preambleCode: false } }),
+    chromeExtension({ manifest }),
     isProduction && zip({ dir: 'releases' }),
   ],
 });
