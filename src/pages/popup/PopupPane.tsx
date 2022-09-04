@@ -2,10 +2,11 @@ import { Menu, MenuButton, MenuList, MenuItem } from '@chakra-ui/react';
 import React, { useRef, useState } from 'react';
 import { TabItem } from '../../components/tab/TabItem';
 import { useContextMenu } from '../../hooks/useContextMenu';
-import { useStore } from '../../store';
+import { useStore, ActiveTab } from '../../store';
 import { closeTab, closeWindow, Tab as TabType } from '../../tabutil';
 import { TabGroupFilterSection } from './GroupFilterSection';
-import { MdChevronLeft } from 'react-icons/md';
+import { MdChevronLeft, MdSettings } from 'react-icons/md';
+import { SettingsPane } from './SettingsPane';
 import clsx from 'clsx';
 
 export const PopupPane = () => {
@@ -21,11 +22,12 @@ export const PopupPane = () => {
       ? `Normal (${normalTabs.length})`
       : null,
     incogTabs.length ? `Incognito (${incogTabs.length})` : null,
+    <MdSettings size={16} key="settings_icon" />,
   ];
 
   return (
     <div style={{ width: '350px', maxWidth: '350px' }}>
-      <div className="tabs">
+      <div className="tabs w-full">
         {tabTitles.map((title, index) =>
           title ? (
             <button
@@ -33,7 +35,8 @@ export const PopupPane = () => {
               className={clsx(
                 'tab',
                 'tab-lifted',
-                selectedTab === index && 'tab-active',
+                'px-3',
+                selectedTab === index && 'tab-active grow',
               )}
               onClick={() => setSelectedTab(index)}
             >
@@ -44,7 +47,11 @@ export const PopupPane = () => {
       </div>
 
       <main className="m-2">
-        <OpenTabGroup />
+        {selectedTab === ActiveTab.Settings ? (
+          <SettingsPane />
+        ) : (
+          <OpenTabGroup />
+        )}
       </main>
     </div>
   );

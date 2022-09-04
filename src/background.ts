@@ -1,5 +1,4 @@
 import { setupBadgeCount } from './badge';
-import { setupDupeLinkMenu } from './contextmenu/listDuplicateLinks';
 import { updateTabContextMenu } from './contextmenu/listDuplicateTabs';
 import { getCurrentTab } from './tabutil';
 
@@ -13,7 +12,7 @@ async function main() {
   );
 
   getCurrentTab().then((tab) => tab && updateTabContextMenu(tab));
-  setupDupeLinkMenu();
+  // setupDupeLinkMenu();
   setupBadgeCount();
 }
 

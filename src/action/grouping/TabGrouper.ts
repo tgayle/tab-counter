@@ -3,7 +3,7 @@ import { GroupSortOrder, TabFilterType, TabSortOrder } from '../TabFilter';
 import { Filters } from '../TabFilterProcessor';
 import { TabStats } from '../TabStats';
 
-type Rule = {
+export type Rule = {
   id: string;
   displayName: string | null;
   origin: string;
@@ -69,7 +69,7 @@ type WindowGroupedOutput = {
 
 export type TabGroupResult = WindowGroupedOutput | DomainGroupedOutput;
 
-const defaultRules: Rule[] = [
+export const defaultRules: Rule[] = [
   {
     id: 'chrome_extension',
     displayName: 'Chrome',

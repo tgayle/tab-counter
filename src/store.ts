@@ -11,10 +11,11 @@ import { TabStats } from './action/TabStats';
 import settings from './settings';
 import { BrowserWindow, getCurrentWindow, getTabInfo, Tab } from './tabutil';
 
-enum ActiveTab {
+export enum ActiveTab {
   All,
   Normal,
   Incog,
+  Settings,
 }
 
 type UiSlice = {
@@ -280,7 +281,7 @@ const createStateSlice: StateCreator<TabCounterState, [], [], StateSlice> = (
             expandedSections: new Set(),
           },
         }));
-        // refresh();
+        refresh();
       },
     },
   };
