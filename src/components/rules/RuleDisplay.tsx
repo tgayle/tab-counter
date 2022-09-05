@@ -2,6 +2,7 @@ import React, { FC } from 'react';
 import { Rule } from '../../action/grouping/TabGrouper';
 import { EditRuleDisplay } from './EditRuleDisplay';
 import { MdDelete, MdEdit } from 'react-icons/md';
+import { RuleQueryParamTable } from './RuleQueryParamTable';
 
 export const RuleDisplay: FC<{
   rule: Rule;
@@ -31,6 +32,10 @@ export const RuleDisplay: FC<{
             </p>
           )}
         </div>
+
+        {rule.queryParams.length > 0 && (
+          <RuleQueryParamTable query={rule.queryParams} />
+        )}
 
         <div className="card-actions justify-between">
           <button

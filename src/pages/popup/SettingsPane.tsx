@@ -19,7 +19,7 @@ export function SettingsPane() {
   const [editingRule, setEditingRule] = useState<string | null>(null);
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col p-2">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl">Rules</h2>
         <div>

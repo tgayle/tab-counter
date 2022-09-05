@@ -44,7 +44,10 @@ export function TabGroupFilterSection() {
         </FilterSelectOption>
       </select>
 
-      <div className="p-1 border rounded-md" onClick={toggleSearchVisible}>
+      <div
+        className="p-1 btn btn-ghost btn-sm btn-outline border-gray-300"
+        onClick={toggleSearchVisible}
+      >
         <MdSearch aria-label="Search tabs" className="p-1" size={24} />
       </div>
 
@@ -98,7 +101,10 @@ function FilterDropdown({
 }) {
   return (
     <div className="dropdown dropdown-end">
-      <div tabIndex={0} className="border p-1 rounded-md">
+      <div
+        tabIndex={0}
+        className="p-1 btn btn-ghost btn-sm btn-outline border-gray-300"
+      >
         <MdSort size={24} />
       </div>
 

@@ -45,7 +45,7 @@ export const PopupPane = () => {
         )}
       </div>
 
-      <main className="m-2 h-full">
+      <main className="h-full">
         {selectedTab === ActiveTab.Settings ? (
           <SettingsPane />
         ) : (
@@ -72,21 +72,23 @@ const OpenTabGroup = () => {
 
   return (
     <div>
-      <TabGroupFilterSection />
+      <div className="p-2">
+        <TabGroupFilterSection />
 
-      {searchVisible && (
-        <input
-          type="text"
-          className="input w-full input-bordered input-sm mt-2"
-          aria-label="Search for a tab"
-          placeholder="Search"
-          value={searchQuery}
-          autoFocus
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      )}
+        {searchVisible && (
+          <input
+            type="text"
+            className="input w-full input-bordered input-sm mt-2"
+            aria-label="Search for a tab"
+            placeholder="Search"
+            value={searchQuery}
+            autoFocus
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        )}
+      </div>
 
-      <div className="divide-y" ref={containerRef}>
+      <div className="divide-y pb-2" ref={containerRef}>
         {groups.type === 'domain'
           ? groups.results.map(({ tabs, origin, rule, displayName }, index) => (
               <GroupAccordionItem
