@@ -56,7 +56,7 @@ const RulePathExplanation: FC<{ rule: Rule }> = ({ rule }) => {
   return (
     <>
       Path must {rule.useExactPath ? 'be' : 'start with'}{' '}
-      <span className="font-mono">{rule.pathname}/</span>
+      <span className="font-mono">{rule.pathname}</span>
     </>
   );
 };
