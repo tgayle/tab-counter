@@ -157,18 +157,21 @@ export const EditRuleDisplay: FC<{
         )}
 
         <div className="card-actions justify-between items-center">
-          <span className="font-mono text-gray-500">
+          <span
+            className="font-mono text-gray-500 max-w-[15ch] truncate"
+            title={rule.id !== NEW_RULE ? rule.id : undefined}
+          >
             {rule.id !== NEW_RULE ? rule.id : ''}
           </span>
 
           <div>
-            <button className="btn btn-ghost" onClick={() => onClose()}>
+            <button className="btn btn-ghost btn-sm" onClick={() => onClose()}>
               Cancel
             </button>
 
             {dirty && (
               <button
-                className="btn btn-primary"
+                className="btn btn-primary btn-sm"
                 disabled={!canSubmit}
                 onClick={() => onEditRule(modifiedRule)}
               >
