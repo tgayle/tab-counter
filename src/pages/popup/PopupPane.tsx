@@ -1,11 +1,9 @@
-import { Menu, MenuButton, MenuList, MenuItem } from '@chakra-ui/react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { TabItem } from '../../components/tab/TabItem';
-import { useContextMenu } from '../../hooks/useContextMenu';
 import { useStore, ActiveTab } from '../../store';
 import { closeTab, closeWindow, Tab as TabType } from '../../tabutil';
 import { TabGroupFilterSection } from './GroupFilterSection';
-import { MdChevronLeft, MdSettings } from 'react-icons/md';
+import { MdChevronLeft, MdMoreVert, MdSettings } from 'react-icons/md';
 import { SettingsPane } from './SettingsPane';
 import autoAnimate from '@formkit/auto-animate';
 import clsx from 'clsx';
@@ -96,7 +94,6 @@ const OpenTabGroup = () => {
                 tabs={tabs}
                 key={rule?.id}
                 open={expandedSections.has(rule?.id ?? index)}
-                hasMenu
                 onOpen={() => toggleSection(rule?.id ?? index)}
                 removeGroupText="Close All"
                 onRemoveGroup={() => closeTab(...tabs)}
@@ -108,7 +105,6 @@ const OpenTabGroup = () => {
                 title={tabs.find((it) => it.active)?.title ?? `#${window.id}`}
                 tabs={tabs}
                 key={window.id}
-                hasMenu
                 open={expandedSections.has(window.id ?? index)}
                 onOpen={() => toggleSection(window.id ?? index)}
                 onRemoveGroup={() => closeWindow(window)}
@@ -124,7 +120,6 @@ const OpenTabGroup = () => {
 const GroupAccordionItem = ({
   title,
   tabs,
-  hasMenu,
   onRemoveGroup,
   open,
   removeGroupText = 'Close Window',
@@ -132,23 +127,11 @@ const GroupAccordionItem = ({
 }: {
   title: string;
   tabs: TabType[];
-  hasMenu?: boolean;
   onRemoveGroup?: () => void;
   removeGroupText?: string;
   open?: boolean;
   onOpen?(): void;
 }) => {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement | null>(null);
-  const buttonRef = useRef<HTMLDivElement | null>(null);
-  useContextMenu({
-    onOpen: () => setMenuOpen(true),
-    onClose: () => setMenuOpen(false),
-    buttonRef,
-    enabled: !!hasMenu,
-    menuRef,
-  });
-
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -159,7 +142,6 @@ const GroupAccordionItem = ({
     <div>
       <div
         className="text-base flex font-medium p-2 items-center cursor-pointer hover:bg-gray-200 transition-colors"
-        ref={buttonRef}
         onClick={onOpen}
       >
         <span className="grow truncate" title={title}>
@@ -176,14 +158,24 @@ const GroupAccordionItem = ({
           />
         </span>
 
-        <Menu isOpen={menuOpen}>
-          <MenuButton as="span" />
-          <MenuList ref={menuRef}>
-            <MenuItem onClick={(e) => (e.preventDefault(), onRemoveGroup?.())}>
-              {removeGroupText}
-            </MenuItem>
-          </MenuList>
-        </Menu>
+        <div className="dropdown dropdown-end">
+          <div
+            tabIndex={0}
+            className="btn btn-circle btn-ghost btn-sm"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <MdMoreVert size={16} />
+          </div>
+
+          <ul
+            tabIndex={0}
+            className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48"
+          >
+            <li onClick={() => onRemoveGroup?.()}>
+              <a>{removeGroupText}</a>
+            </li>
+          </ul>
+        </div>
       </div>
       <div ref={containerRef}>{open && <BrowserTabList tabs={tabs} />}</div>
     </div>

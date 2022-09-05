@@ -162,7 +162,7 @@ export const EditRuleDisplay: FC<{
           </span>
 
           <div>
-            <button className="btn btn-ghost" onClick={onClose}>
+            <button className="btn btn-ghost" onClick={() => onClose()}>
               Cancel
             </button>
 
