@@ -141,10 +141,10 @@ const GroupAccordionItem = ({
   return (
     <div>
       <div
-        className="text-base flex font-medium p-2 items-center cursor-pointer hover:bg-gray-200 transition-colors"
+        className="flex font-medium p-2 items-center cursor-pointer hover:bg-gray-200 transition-colors"
         onClick={onOpen}
       >
-        <span className="grow truncate" title={title}>
+        <span className="grow truncate text-md" title={title}>
           {title}
         </span>
 
