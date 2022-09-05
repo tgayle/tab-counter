@@ -1,5 +1,5 @@
 import { Menu, MenuButton, MenuList, MenuItem } from '@chakra-ui/react';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { TabItem } from '../../components/tab/TabItem';
 import { useContextMenu } from '../../hooks/useContextMenu';
 import { useStore, ActiveTab } from '../../store';
@@ -7,6 +7,7 @@ import { closeTab, closeWindow, Tab as TabType } from '../../tabutil';
 import { TabGroupFilterSection } from './GroupFilterSection';
 import { MdChevronLeft, MdSettings } from 'react-icons/md';
 import { SettingsPane } from './SettingsPane';
+import autoAnimate from '@formkit/auto-animate';
 import clsx from 'clsx';
 
 export const PopupPane = () => {
@@ -65,6 +66,12 @@ const OpenTabGroup = () => {
   const expandedSections = useStore(({ ui }) => ui.expandedSections);
   const toggleSection = useStore(({ ui }) => ui.toggleSection);
 
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    containerRef.current && autoAnimate(containerRef.current);
+  }, [containerRef]);
+
   return (
     <div>
       <TabGroupFilterSection />
@@ -81,7 +88,7 @@ const OpenTabGroup = () => {
         />
       )}
 
-      <div className="divide-y">
+      <div className="divide-y" ref={containerRef}>
         {groups.type === 'domain'
           ? groups.results.map(({ tabs, origin, rule, displayName }, index) => (
               <GroupAccordionItem
@@ -178,12 +185,16 @@ const GroupAccordionItem = ({
 };
 
 const BrowserTabList = ({ tabs }: { tabs: TabType[] }) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    containerRef.current && autoAnimate(containerRef.current);
+  }, [containerRef]);
+
   return (
-    <div className="divide-y">
+    <div className="divide-y" ref={containerRef}>
       {tabs.map((tab) => (
-        <div key={tab.id}>
-          <TabItem tab={tab} />
-        </div>
+        <TabItem tab={tab} key={tab.id} />
       ))}
     </div>
   );
