@@ -69,46 +69,11 @@ type WindowGroupedOutput = {
 
 export type TabGroupResult = WindowGroupedOutput | DomainGroupedOutput;
 
-export const defaultRules: Rule[] = [
-  {
-    id: 'chrome_extension',
-    displayName: 'Chrome',
-    origin: 'chrome://extensions',
-    pathname: null,
-    queryParams: [],
-  },
-  {
-    id: 'chrome_newtab',
-    displayName: 'New Tab',
-    origin: 'chrome://newtab',
-    pathname: null,
-    queryParams: [],
-  },
-  {
-    id: 'chrome_extensions',
-    displayName: 'Chrome Extensions',
-    origin: 'chrome-extension://',
-    pathname: null,
-    queryParams: [],
-  },
-  {
-    id: 'youtube_video',
-    displayName: 'YouTube Videos',
-    origin: 'https://www.youtube.com',
-    pathname: '/watch',
-    queryParams: ['v'],
-  },
-  {
-    id: 'youtube_channel',
-    displayName: 'YouTube Channels',
-    origin: 'https://www.youtube.com',
-    pathname: '/c',
-    queryParams: [],
-  },
-];
-
 export class TabGrouper {
-  activeRules = defaultRules;
+  get activeRules() {
+    return JSON.parse(localStorage.getItem('rules') ?? '[]') as Rule[];
+  }
+
   windowId = -1;
 
   async filterByWindows(

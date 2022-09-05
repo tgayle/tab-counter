@@ -34,9 +34,7 @@ export const PopupPane = () => {
             <button
               key={index}
               className={clsx(
-                'tab',
-                'tab-lifted',
-                'px-3',
+                'tab tab-lifted px-3',
                 selectedTab === index && 'tab-active grow',
               )}
               onClick={() => setSelectedTab(index)}
@@ -47,7 +45,7 @@ export const PopupPane = () => {
         )}
       </div>
 
-      <main className="m-2">
+      <main className="m-2 h-full">
         {selectedTab === ActiveTab.Settings ? (
           <SettingsPane />
         ) : (
@@ -149,6 +147,12 @@ const GroupAccordionItem = ({
     menuRef,
   });
 
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    containerRef.current && autoAnimate(containerRef.current);
+  }, [containerRef]);
+
   return (
     <div>
       <div
@@ -179,7 +183,7 @@ const GroupAccordionItem = ({
           </MenuList>
         </Menu>
       </div>
-      <div>{open && <BrowserTabList tabs={tabs} />}</div>
+      <div ref={containerRef}>{open && <BrowserTabList tabs={tabs} />}</div>
     </div>
   );
 };

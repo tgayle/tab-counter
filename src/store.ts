@@ -1,5 +1,6 @@
 import create, { StateCreator } from 'zustand';
-import { TabGrouper, TabGroupResult } from './action/grouping/TabGrouper';
+import { defaultRules } from './action/grouping/defaultRules';
+import { Rule, TabGrouper, TabGroupResult } from './action/grouping/TabGrouper';
 import {
   GroupSortOrder,
   GroupTabsByOptions,
@@ -38,7 +39,12 @@ type StateSlice = {
     groups: TabGroupResult;
     activeTab: ActiveTab;
     stats: TabStats;
+    rules: Rule[];
 
+    restoreDefaultRules: () => void;
+    addRule: (rule: Rule) => void;
+    removeRule: (rule: Rule) => void;
+    updateRule: (rule: Rule) => void;
     setActiveTab: (tab: ActiveTab) => void;
     setSearchQuery: (query: string) => void;
     setTabFilterType(type: TabFilterType): void;
@@ -190,6 +196,35 @@ const createStateSlice: StateCreator<TabCounterState, [], [], StateSlice> = (
 
   return {
     state: {
+      rules: grouper.activeRules,
+      restoreDefaultRules() {
+        set(({ state }) => ({ state: { ...state, rules: defaultRules } }));
+        localStorage.setItem('rules', JSON.stringify(defaultRules));
+        refresh();
+      },
+      addRule: (rule) => {
+        const newRules = [rule, ...getState().state.rules];
+        set(({ state }) => ({ state: { ...state, rules: newRules } }));
+        localStorage.setItem('rules', JSON.stringify(newRules));
+        refresh();
+      },
+      removeRule: (rule) => {
+        const newRules = getState().state.rules.filter((r) => r.id !== rule.id);
+        localStorage.setItem('rules', JSON.stringify(newRules));
+        set(({ state }) => ({ state: { ...state, rules: newRules } }));
+        refresh();
+      },
+      updateRule: (rule) => {
+        const rules = getState().state.rules.slice();
+        rules.splice(
+          rules.findIndex((r) => r.id === rule.id),
+          1,
+          rule,
+        );
+        localStorage.setItem('rules', JSON.stringify(rules));
+        set(({ state }) => ({ state: { ...state, rules: rules } }));
+        refresh();
+      },
       currentWindow: null,
       query: {
         query: '',

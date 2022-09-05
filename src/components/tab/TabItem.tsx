@@ -40,10 +40,7 @@ export const TabItem: React.FC<{ tab: Tab }> = ({ tab }) => {
           </button>
 
           <div className="dropdown dropdown-end">
-            <button
-              className="p-1 btn btn-ghost btn-outline btn-sm "
-              tabIndex={0}
-            >
+            <button className="p-1 btn btn-ghost btn-sm" tabIndex={0}>
               <MdMoreVert size={20} />
             </button>
 
