@@ -1,5 +1,4 @@
 import create, { StateCreator } from 'zustand';
-import { defaultRules } from './action/grouping/defaultRules';
 import { Rule, TabGrouper, TabGroupResult } from './action/grouping/TabGrouper';
 import {
   GroupSortOrder,
@@ -187,6 +186,9 @@ const createStateSlice: StateCreator<TabCounterState, [], [], StateSlice> = (
       refresh();
     };
 
+    grouper.observeRules((rules) =>
+      set(({ state }) => ({ state: { ...state, rules } })),
+    );
     chrome.tabs.onCreated.addListener(updateTabs);
     chrome.tabs.onRemoved.addListener(updateTabs);
     chrome.tabs.onUpdated.addListener(updateTabs);
@@ -197,32 +199,40 @@ const createStateSlice: StateCreator<TabCounterState, [], [], StateSlice> = (
   return {
     state: {
       rules: grouper.activeRules,
-      restoreDefaultRules() {
-        set(({ state }) => ({ state: { ...state, rules: defaultRules } }));
-        localStorage.setItem('rules', JSON.stringify(defaultRules));
+      async restoreDefaultRules() {
+        await grouper.restoreDefaultRules();
+        set(({ state }) => ({
+          state: { ...state, rules: grouper.activeRules },
+        }));
         refresh();
       },
-      addRule: (rule) => {
+      addRule: async (rule) => {
         const newRules = [rule, ...getState().state.rules];
-        set(({ state }) => ({ state: { ...state, rules: newRules } }));
-        localStorage.setItem('rules', JSON.stringify(newRules));
+        await grouper.updateRules(newRules);
+        set(({ state }) => ({
+          state: { ...state, rules: grouper.activeRules },
+        }));
         refresh();
       },
-      removeRule: (rule) => {
+      removeRule: async (rule) => {
         const newRules = getState().state.rules.filter((r) => r.id !== rule.id);
-        localStorage.setItem('rules', JSON.stringify(newRules));
-        set(({ state }) => ({ state: { ...state, rules: newRules } }));
+        await grouper.updateRules(newRules);
+        set(({ state }) => ({
+          state: { ...state, rules: grouper.activeRules },
+        }));
         refresh();
       },
-      updateRule: (rule) => {
+      updateRule: async (rule) => {
         const rules = getState().state.rules.slice();
         rules.splice(
           rules.findIndex((r) => r.id === rule.id),
           1,
           rule,
         );
-        localStorage.setItem('rules', JSON.stringify(rules));
-        set(({ state }) => ({ state: { ...state, rules: rules } }));
+        await grouper.updateRules(rules);
+        set(({ state }) => ({
+          state: { ...state, rules: grouper.activeRules },
+        }));
         refresh();
       },
       currentWindow: null,

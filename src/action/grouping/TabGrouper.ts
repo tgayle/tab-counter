@@ -2,6 +2,7 @@ import { BrowserWindow, getAllWindows, Tab } from '../../tabutil';
 import { GroupSortOrder, TabFilterType, TabSortOrder } from '../TabFilter';
 import { Filters } from '../TabFilterProcessor';
 import { TabStats } from '../TabStats';
+import { defaultRules } from './defaultRules';
 
 export type Rule = {
   id: string;
@@ -70,8 +71,20 @@ type WindowGroupedOutput = {
 export type TabGroupResult = WindowGroupedOutput | DomainGroupedOutput;
 
 export class TabGrouper {
-  get activeRules() {
-    return JSON.parse(localStorage.getItem('rules') ?? '[]') as Rule[];
+  activeRules: Rule[] = [];
+
+  constructor() {
+    this.getActiveRules();
+  }
+
+  private async getActiveRules(): Promise<Rule[]> {
+    const { rules } = await chrome.storage.sync.get({
+      rules: defaultRules,
+    });
+
+    const result = Array.isArray(rules) ? rules : defaultRules;
+    this.activeRules = result;
+    return this.activeRules;
   }
 
   windowId = -1;
@@ -284,6 +297,27 @@ export class TabGrouper {
       return (
         title.toLowerCase().includes(query) || url.toLowerCase().includes(query)
       );
+    });
+  }
+
+  async restoreDefaultRules() {
+    await this.updateRules(defaultRules);
+  }
+
+  async updateRules(rules: Rule[]) {
+    this.activeRules = rules;
+    await chrome.storage.sync.set({
+      rules,
+    });
+  }
+
+  observeRules(onRulesChanged: (rules: Rule[]) => void) {
+    this.getActiveRules().then(onRulesChanged);
+    chrome.storage.onChanged.addListener((changes, areaName) => {
+      if (areaName !== 'sync') return;
+      if (changes.rules) {
+        onRulesChanged(changes.rules.newValue ?? []);
+      }
     });
   }
 }

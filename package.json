@@ -1,6 +1,6 @@
 {
   "name": "tab-counter",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "private": true,
   "description": "Counts your open tabs.",
   "author": "tgayle",
