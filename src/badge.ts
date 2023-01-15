@@ -32,9 +32,9 @@ async function updateCount() {
   });
 }
 
-// 0x007A1F
+// 0x007A1F, hsl(135, 100%, 24%)
 const goodColor = [0x00, 0x7a, 0x1f];
-// 0x9B1C1C
+// 0x9B1C1C, hsl(0, 69%, 36%)
 const badColor = [0x9b, 0x1c, 0x1c];
 
 function getBadgeColor(tabCount: number) {
@@ -44,17 +44,14 @@ function getBadgeColor(tabCount: number) {
   tabCount = tabCount >= 99 ? tabCount : Math.max(1, tabCount - 20);
 
   const targetContribution = Math.min(tabCount / 99, 1.0);
-  const initialContribution = 1 - targetContribution;
 
-  const adjustedInitial = goodColor.map((it) => it * initialContribution);
-  const adjustedTarget = badColor.map((it) => it * targetContribution);
+  const hue = lerp(135, 0, targetContribution);
+  const saturation = lerp(100, 69, targetContribution);
+  const lightness = lerp(24, 36, targetContribution);
 
-  const combinedColors = adjustedInitial.map((it, i) => it + adjustedTarget[i]);
+  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+}
 
-  return (
-    '#' +
-    combinedColors
-      .map((it) => Math.floor(it).toString(16).padStart(2, '0'))
-      .join('')
-  );
+function lerp(start: number, end: number, t: number) {
+  return start + (end - start) * t;
 }
