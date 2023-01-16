@@ -7,7 +7,7 @@
     "module": "ESNext",
     "moduleResolution": "node",
     "noImplicitReturns": true,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
     "noEmit": true,
     "strict": true,
     "target": "ES2018",
