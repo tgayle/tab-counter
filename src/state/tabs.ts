@@ -6,7 +6,7 @@ import { ActiveTab } from '../store';
 import { BrowserWindow, getCurrentWindow, getTabInfo } from '../tabutil';
 import { groupingRulesAtom } from './rules';
 import { tabFilterAtom } from './settings';
-import { selectedTabAtom } from './ui';
+import { expandedSectionsAtom, selectedTabAtom } from './ui';
 
 export const tabGrouper = new TabGrouper();
 export const currentWindowAtom = atom<BrowserWindow | null>(null);
@@ -26,6 +26,10 @@ export const searchQueryAtom = atom(
       ...get(tabFilterAtom),
       query,
     });
+
+    if (!query) {
+      set(expandedSectionsAtom, new Set());
+    }
   },
 );
 
