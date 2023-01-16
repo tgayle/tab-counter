@@ -1,3 +1,4 @@
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import React, { ReactNode } from 'react';
 import { MdSearch, MdSort } from 'react-icons/md';
 import {
@@ -5,15 +6,20 @@ import {
   GroupTabsByOptions,
   GroupSortOrder,
 } from '../../action/TabFilter';
-import { useStore } from '../../store';
+import {
+  setGroupSortByAtom,
+  setTabFilterTypeAtom,
+  setTabGroupingAtom,
+  tabFilterAtom,
+} from '../../state/settings';
+import { filteredTabGroups, searchVisibleAtom } from '../../state/tabs';
 
 export function TabGroupFilterSection() {
-  const stats = useStore(({ state }) => state.groups.stats);
-  const toggleSearchVisible = useStore(({ ui }) => ui.toggleSearchVisible);
-  const setTabFilterType = useStore(({ state }) => state.setTabFilterType);
-  const setTabGrouping = useStore(({ state }) => state.setTabGrouping);
-  const setGroupSortBy = useStore(({ state }) => state.setGroupSortBy);
-  const filters = useStore(({ state }) => state.query);
+  const [searchVisible, toggleSearchVisible] = useAtom(searchVisibleAtom);
+  const filters = useAtomValue(tabFilterAtom);
+  const setTabFilterType = useSetAtom(setTabFilterTypeAtom);
+  const setTabGrouping = useSetAtom(setTabGroupingAtom);
+  const setGroupSortBy = useSetAtom(setGroupSortByAtom);
 
   return (
     <div className="flex gap-2">
@@ -26,27 +32,12 @@ export function TabGroupFilterSection() {
           }
         }}
       >
-        <FilterSelectOption value={TabFilterType.All}>All</FilterSelectOption>
-        <FilterSelectOption value={TabFilterType.CurrentWindow}>
-          Current Window
-        </FilterSelectOption>
-        <FilterSelectOption
-          count={stats.audible.length}
-          value={TabFilterType.Audible}
-        >
-          Audible
-        </FilterSelectOption>
-        <FilterSelectOption
-          count={stats.duplicates.length}
-          value={TabFilterType.Duplicates}
-        >
-          Duplicates
-        </FilterSelectOption>
+        <StatsOptions />
       </select>
 
       <div
         className="p-1 btn btn-ghost btn-sm btn-outline border-gray-300"
-        onClick={toggleSearchVisible}
+        onClick={() => toggleSearchVisible(!searchVisible)}
       >
         <MdSearch aria-label="Search tabs" className="p-1" size={24} />
       </div>
@@ -58,6 +49,43 @@ export function TabGroupFilterSection() {
         onChangeSortOrder={(sortBy) => setGroupSortBy(sortBy)}
       />
     </div>
+  );
+}
+
+function StatsOptions() {
+  const groupsAtom = useAtomValue(filteredTabGroups);
+
+  const stats =
+    groupsAtom.state === 'hasData'
+      ? groupsAtom.data.stats
+      : {
+          audible: [],
+          duplicates: [],
+        };
+
+  return (
+    <>
+      <FilterSelectOption value={TabFilterType.All} key="all">
+        All
+      </FilterSelectOption>
+      <FilterSelectOption value={TabFilterType.CurrentWindow} key="window">
+        Current Window
+      </FilterSelectOption>
+      <FilterSelectOption
+        key="audible"
+        count={stats.audible.length}
+        value={TabFilterType.Audible}
+      >
+        Audible
+      </FilterSelectOption>
+      <FilterSelectOption
+        key="duplicates"
+        count={stats.duplicates.length}
+        value={TabFilterType.Duplicates}
+      >
+        Duplicates
+      </FilterSelectOption>
+    </>
   );
 }
 

@@ -19,7 +19,7 @@ export type FilterSettings = {
   tabSortBy: TabSortOrder;
 };
 
-type SettingsUpdateListener = (settings: FilterSettings) => void;
+export type SettingsUpdateListener = (settings: FilterSettings) => void;
 
 class Settings {
   private loadedResolver!: () => void;

@@ -1,21 +1,27 @@
 import React, { useState } from 'react';
 import { MdAdd, MdClose, MdRestore } from 'react-icons/md';
-import { useStore } from '../../store';
 import {
   EditRuleDisplay,
   NEW_RULE,
 } from '../../components/rules/EditRuleDisplay';
 import { RuleDisplay } from '../../components/rules/RuleDisplay';
 import { nanoid } from 'nanoid';
+import { useAtomValue, useSetAtom } from 'jotai';
+import {
+  addRuleAtom,
+  groupingRulesAtom,
+  removeRuleAtom,
+  restoreDefaultRulesAtom,
+  updateRuleAtom,
+} from '../../state/rules';
 
 export function SettingsPane() {
-  const rules = useStore(({ state }) => state.rules);
-  const addRule = useStore(({ state }) => state.addRule);
-  const removeRule = useStore(({ state }) => state.removeRule);
-  const updateRule = useStore(({ state }) => state.updateRule);
-  const restoreDefaultRules = useStore(
-    ({ state }) => state.restoreDefaultRules,
-  );
+  const rules = useAtomValue(groupingRulesAtom);
+  const addRule = useSetAtom(addRuleAtom);
+  const removeRule = useSetAtom(removeRuleAtom);
+  const updateRule = useSetAtom(updateRuleAtom);
+  const restoreDefaultRules = useSetAtom(restoreDefaultRulesAtom);
+
   const [editingRule, setEditingRule] = useState<string | null>(null);
 
   return (

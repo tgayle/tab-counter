@@ -1,19 +1,37 @@
 import React, { useEffect, useRef } from 'react';
 import { TabItem } from '../../components/tab/TabItem';
-import { useStore, ActiveTab } from '../../store';
+import { ActiveTab } from '../../store';
 import { closeTab, closeWindow, Tab as TabType } from '../../tabutil';
 import { TabGroupFilterSection } from './GroupFilterSection';
 import { MdChevronLeft, MdMoreVert, MdSettings } from 'react-icons/md';
 import { SettingsPane } from './SettingsPane';
 import autoAnimate from '@formkit/auto-animate';
 import clsx from 'clsx';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import {
+  allTabsAtom,
+  filteredTabGroups,
+  searchQueryAtom,
+  searchVisibleAtom,
+} from '../../state/tabs';
+import {
+  expandedSectionsAtom,
+  selectedTabAtom,
+  toggleSectionExpansion,
+} from '../../state/ui';
 
 export const PopupPane = () => {
-  const selectedTab = useStore((state) => state.state.activeTab);
-  const setSelectedTab = useStore((state) => state.state.setActiveTab);
-  const allTabs = useStore(({ state }) => state.allTabs);
-  const incogTabs = useStore(({ state }) => state.incognitoTabs);
-  const normalTabs = useStore(({ state }) => state.normalTabs);
+  const [selectedTab, setSelectedTab] = useAtom(selectedTabAtom);
+
+  const {
+    all: allTabs,
+    incognito: incogTabs,
+    normal: normalTabs,
+  } = useAtomValue(allTabsAtom);
+
+  const t = useAtomValue(allTabsAtom);
+
+  console.log(t);
 
   const tabTitles = [
     `All (${allTabs.length})`,
@@ -55,12 +73,8 @@ export const PopupPane = () => {
 };
 
 const OpenTabGroup = () => {
-  const groups = useStore(({ state }) => state.groups);
-  const searchQuery = useStore(({ state: { query } }) => query.query);
-  const setSearchQuery = useStore(({ state }) => state.setSearchQuery);
-  const searchVisible = useStore(({ ui }) => ui.searchVisible);
-  const expandedSections = useStore(({ ui }) => ui.expandedSections);
-  const toggleSection = useStore(({ ui }) => ui.toggleSection);
+  const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom);
+  const searchVisible = useAtomValue(searchVisibleAtom);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -87,33 +101,62 @@ const OpenTabGroup = () => {
       </div>
 
       <div className="divide-y pb-2" ref={containerRef}>
-        {groups.type === 'domain'
-          ? groups.results.map(({ tabs, origin, rule, displayName }, index) => (
-              <GroupAccordionItem
-                title={displayName ?? origin}
-                tabs={tabs}
-                key={rule?.id}
-                open={expandedSections.has(rule?.id ?? index)}
-                onOpen={() => toggleSection(rule?.id ?? index)}
-                removeGroupText="Close All"
-                onRemoveGroup={() => closeTab(...tabs)}
-              />
-            ))
-          : groups.type === 'window'
-          ? groups.results.map(({ window, tabs }, index) => (
-              <GroupAccordionItem
-                title={tabs.find((it) => it.active)?.title ?? `#${window.id}`}
-                tabs={tabs}
-                key={window.id}
-                open={expandedSections.has(window.id ?? index)}
-                onOpen={() => toggleSection(window.id ?? index)}
-                onRemoveGroup={() => closeWindow(window)}
-                removeGroupText="Close Window"
-              />
-            ))
-          : `how did you get here? (grouping=${JSON.stringify(groups)})`}
+        <TabGroupItems />
       </div>
     </div>
+  );
+};
+
+const TabGroupItems = () => {
+  const expandedSections = useAtomValue(expandedSectionsAtom);
+  const toggleSection = useSetAtom(toggleSectionExpansion);
+  const groupAtom = useAtomValue(filteredTabGroups);
+
+  const lastValue = useRef(
+    groupAtom.state === 'hasData' ? groupAtom.data : null,
+  );
+
+  useEffect(() => {
+    if (groupAtom.state === 'hasData') {
+      lastValue.current = groupAtom.data;
+    }
+  }, [groupAtom.state]);
+
+  const groups =
+    groupAtom.state === 'hasData' ? groupAtom.data : lastValue.current;
+
+  if (!groups) {
+    return null;
+  }
+
+  return (
+    <>
+      {groups.type === 'domain'
+        ? groups.results.map(({ tabs, origin, rule, displayName }, index) => (
+            <GroupAccordionItem
+              title={displayName ?? origin}
+              tabs={tabs}
+              key={rule?.id}
+              open={expandedSections.has(rule?.id ?? index)}
+              onOpen={() => toggleSection(rule?.id ?? index)}
+              removeGroupText="Close All"
+              onRemoveGroup={() => closeTab(...tabs)}
+            />
+          ))
+        : groups.type === 'window'
+        ? groups.results.map(({ window, tabs }, index) => (
+            <GroupAccordionItem
+              title={tabs.find((it) => it.active)?.title ?? `#${window.id}`}
+              tabs={tabs}
+              key={window.id}
+              open={expandedSections.has(window.id ?? index)}
+              onOpen={() => toggleSection(window.id ?? index)}
+              onRemoveGroup={() => closeWindow(window)}
+              removeGroupText="Close Window"
+            />
+          ))
+        : `how did you get here? (grouping=${JSON.stringify(groups)})`}
+    </>
   );
 };
 

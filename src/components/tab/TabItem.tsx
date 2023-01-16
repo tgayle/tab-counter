@@ -1,7 +1,8 @@
 import clsx from 'clsx';
+import { useAtomValue } from 'jotai';
 import React from 'react';
 import { MdMoreVert, MdOpenInNew } from 'react-icons/md';
-import { useStore } from '../../store';
+import { currentWindowAtom } from '../../state/tabs';
 import {
   closeTab,
   focusTab,
@@ -11,7 +12,7 @@ import {
 } from '../../tabutil';
 
 export const TabItem: React.FC<{ tab: Tab }> = ({ tab }) => {
-  const currentWindow = useStore(({ state }) => state.currentWindow);
+  const currentWindow = useAtomValue(currentWindowAtom);
   const canMoveTabToWindow =
     (currentWindow?.incognito === tab.incognito &&
       tab.windowId !== currentWindow?.id) ||

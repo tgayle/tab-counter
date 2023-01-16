@@ -313,12 +313,26 @@ export class TabGrouper {
 
   observeRules(onRulesChanged: (rules: Rule[]) => void) {
     this.getActiveRules().then(onRulesChanged);
-    chrome.storage.onChanged.addListener((changes, areaName) => {
+    const listener = (
+      changes: Record<string, chrome.storage.StorageChange>,
+      areaName: string,
+    ) => {
       if (areaName !== 'sync') return;
       if (changes.rules) {
         onRulesChanged(changes.rules.newValue ?? []);
       }
-    });
+    };
+    chrome.storage.onChanged.addListener(listener);
+    return listener;
+  }
+
+  unobserveRules(
+    listener: (
+      changes: Record<string, chrome.storage.StorageChange>,
+      areaName: string,
+    ) => void,
+  ) {
+    chrome.storage.onChanged.removeListener(listener);
   }
 }
 
