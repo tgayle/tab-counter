@@ -29,10 +29,6 @@ export const PopupPane = () => {
     normal: normalTabs,
   } = useAtomValue(allTabsAtom);
 
-  const t = useAtomValue(allTabsAtom);
-
-  console.log(t);
-
   const tabTitles = [
     `All (${allTabs.length})`,
     normalTabs.length && incogTabs.length
@@ -41,6 +37,16 @@ export const PopupPane = () => {
     incogTabs.length ? `Incognito (${incogTabs.length})` : null,
     <MdSettings size={16} key="settings_icon" />,
   ];
+
+  useEffect(() => {
+    console.log(selectedTab, normalTabs.length, incogTabs.length);
+    if (
+      (selectedTab === ActiveTab.Normal && !normalTabs.length) ||
+      (selectedTab === ActiveTab.Incog && !incogTabs.length)
+    ) {
+      setSelectedTab(ActiveTab.All);
+    }
+  }, [selectedTab, normalTabs.length, incogTabs.length]);
 
   return (
     <div style={{ width: '350px', maxWidth: '350px' }}>
@@ -180,6 +186,10 @@ const GroupAccordionItem = ({
   useEffect(() => {
     containerRef.current && autoAnimate(containerRef.current);
   }, [containerRef]);
+
+  if (!tabs.length) {
+    return null;
+  }
 
   return (
     <div>
