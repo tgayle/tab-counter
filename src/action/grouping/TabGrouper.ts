@@ -113,13 +113,15 @@ export class TabGrouper {
       return acc;
     }, {} as Record<number, Tab[]>);
 
-    const groups = windows.map((window): WindowGroupedOutputResult => {
-      return {
-        window,
-        displayName: `Window ${window.id}`,
-        tabs: this.sortTabs(tabsByWindow[window.id!] || [], tabOrder),
-      };
-    });
+    const groups = windows
+      .map((window): WindowGroupedOutputResult => {
+        return {
+          window,
+          displayName: `Window ${window.id}`,
+          tabs: this.sortTabs(tabsByWindow[window.id!] || [], tabOrder),
+        };
+      })
+      .filter((it) => it.tabs.length);
 
     const results = this.sortGroups(groups, groupOrder);
 
