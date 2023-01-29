@@ -19,6 +19,7 @@ import {
   selectedTabAtom,
   toggleSectionExpansion,
 } from '../../state/ui';
+import { DeduplicateTabButton } from '../../components/DeduplicateTabsButton';
 
 export const PopupPane = () => {
   const [selectedTab, setSelectedTab] = useAtom(selectedTabAtom);
@@ -109,6 +110,8 @@ const OpenTabGroup = () => {
       <div className="divide-y pb-2" ref={containerRef}>
         <TabGroupItems />
       </div>
+
+      <DeduplicateTabButton />
     </div>
   );
 };
