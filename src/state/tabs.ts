@@ -1,7 +1,7 @@
 import { atom } from 'jotai';
 import { loadable } from 'jotai/utils';
 import { TabGrouper } from '../action/grouping/TabGrouper';
-import { GroupTabsByOptions } from '../action/TabFilter';
+import { GroupTabsByOptions, TabFilterType } from '../action/TabFilter';
 import { ActiveTab } from '../store';
 import { BrowserWindow, getCurrentWindow, getTabInfo } from '../tabutil';
 import { groupingRulesAtom } from './rules';
@@ -86,7 +86,10 @@ export const filteredTabGroups = loadable(
         ? tabs.normal
         : tabs.incognito;
 
-    if (filters.grouping.groupBy === GroupTabsByOptions.Domain) {
+    if (
+      filters.grouping.groupBy === GroupTabsByOptions.Domain ||
+      filters.tabs.type === TabFilterType.Duplicates
+    ) {
       return tabGrouper.filterByRules(targetTabs, filters);
     } else {
       return await tabGrouper.filterByWindows(targetTabs, filters);
