@@ -40,20 +40,32 @@ const tabsAtom = atom<Awaited<ReturnType<typeof getTabInfo>>['tabs']>({
 });
 
 tabsAtom.onMount = (setAtom) => {
-  const updateTabs = async () => {
+  const updateTabs = (reason: string) => async () => {
+    console.log(`Updating Tabs: ${reason}`);
     const { tabs } = await getTabInfo();
     setAtom(tabs);
   };
-  chrome.tabs.onCreated.addListener(updateTabs);
-  chrome.tabs.onRemoved.addListener(updateTabs);
-  chrome.tabs.onUpdated.addListener(updateTabs);
 
-  updateTabs();
+  const onCreate = updateTabs('onCreated');
+  const onRemove = updateTabs('onRemoved');
+  const onUpdate = updateTabs('onUpdated');
+  const onWindowCreate = updateTabs('windowCreated');
+  const onWindowRemove = updateTabs('windowRemoved');
+
+  chrome.tabs.onCreated.addListener(onCreate);
+  chrome.tabs.onRemoved.addListener(onRemove);
+  chrome.tabs.onUpdated.addListener(onUpdate);
+  chrome.windows.onCreated.addListener(onWindowCreate);
+  chrome.windows.onRemoved.addListener(onWindowRemove);
+
+  updateTabs('init')();
 
   return () => {
-    chrome.tabs.onCreated.removeListener(updateTabs);
-    chrome.tabs.onRemoved.removeListener(updateTabs);
-    chrome.tabs.onUpdated.removeListener(updateTabs);
+    chrome.tabs.onCreated.removeListener(onCreate);
+    chrome.tabs.onRemoved.removeListener(onRemove);
+    chrome.tabs.onUpdated.removeListener(onUpdate);
+    chrome.windows.onCreated.removeListener(onWindowCreate);
+    chrome.windows.onRemoved.removeListener(onWindowRemove);
   };
 };
 
