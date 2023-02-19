@@ -1,13 +1,13 @@
 import React, { useEffect, useRef } from 'react';
-import { TabItem } from '../../components/tab/TabItem';
 import { ActiveTab } from '../../store';
 import { closeTab, closeWindow, Tab as TabType } from '../../tabutil';
-import { TabGroupFilterSection } from './GroupFilterSection';
-import { MdChevronLeft, MdMoreVert, MdSettings } from 'react-icons/md';
+import { TabFilterSection } from './TabFilterSection';
+import { MdSettings } from 'react-icons/md';
 import { SettingsPane } from './SettingsPane';
 import autoAnimate from '@formkit/auto-animate';
 import clsx from 'clsx';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
+import { GroupAccordionItem } from '../../components/groups/GroupAccordionItem';
 import {
   allTabsAtom,
   filteredTabGroups,
@@ -20,6 +20,7 @@ import {
   toggleSectionExpansion,
 } from '../../state/ui';
 import { DeduplicateTabButton } from '../../components/DeduplicateTabsButton';
+import { IncognitoTabOptions } from '../../components/IncognitoTabOptions';
 
 export const PopupPane = () => {
   const [selectedTab, setSelectedTab] = useAtom(selectedTabAtom);
@@ -92,7 +93,7 @@ const OpenTabGroup = () => {
   return (
     <div>
       <div className="p-2">
-        <TabGroupFilterSection />
+        <TabFilterSection />
 
         {searchVisible && (
           <input
@@ -112,6 +113,7 @@ const OpenTabGroup = () => {
       </div>
 
       <DeduplicateTabButton />
+      <IncognitoTabOptions />
     </div>
   );
 };
@@ -168,121 +170,3 @@ const TabGroupItems = () => {
     </>
   );
 };
-
-const GroupAccordionItem = ({
-  title,
-  tabs,
-  onRemoveGroup,
-  open,
-  removeGroupText = 'Close Window',
-  onOpen,
-}: {
-  title: string;
-  tabs: TabType[];
-  onRemoveGroup?: () => void;
-  removeGroupText?: string;
-  open?: boolean;
-  onOpen?(): void;
-}) => {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    containerRef.current && autoAnimate(containerRef.current);
-  }, [containerRef]);
-
-  if (!tabs.length) {
-    return null;
-  }
-
-  return (
-    <div>
-      {tabs.length > 1 && (
-        <GroupAccordionIconHeader
-          onOpen={onOpen}
-          title={title}
-          tabs={tabs}
-          open={open}
-          onRemoveGroup={onRemoveGroup}
-          removeGroupText={removeGroupText}
-        />
-      )}
-      <div ref={containerRef}>
-        {(open || tabs.length === 1) && <BrowserTabList tabs={tabs} />}
-      </div>
-    </div>
-  );
-};
-
-const BrowserTabList = ({ tabs }: { tabs: TabType[] }) => {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    containerRef.current && autoAnimate(containerRef.current);
-  }, [containerRef]);
-
-  return (
-    <div className="divide-y" ref={containerRef}>
-      {tabs.map((tab) => (
-        <TabItem tab={tab} key={tab.id} />
-      ))}
-    </div>
-  );
-};
-
-type GroupAccordionIconHeaderProps = {
-  onOpen: (() => void) | undefined;
-  title: string;
-  tabs: chrome.tabs.Tab[];
-  open: boolean | undefined;
-  onRemoveGroup: (() => void) | undefined;
-  removeGroupText: string;
-};
-
-function GroupAccordionIconHeader({
-  onOpen,
-  onRemoveGroup,
-  open,
-  removeGroupText,
-  tabs,
-  title,
-}: GroupAccordionIconHeaderProps) {
-  return (
-    <div
-      className="flex font-medium p-2 items-center cursor-pointer hover:bg-gray-200 transition-colors"
-      onClick={onOpen}
-    >
-      <span className="grow truncate text-md" title={title}>
-        {title}
-      </span>
-
-      <span className="flex items-center gap-2 pl-2">
-        <span>({tabs.length})</span>
-        <MdChevronLeft
-          size={24}
-          className={
-            'transition-transform ' + (open ? 'rotate-90' : '-rotate-90')
-          }
-        />
-      </span>
-
-      <div className="dropdown dropdown-end">
-        <div
-          tabIndex={0}
-          className="btn btn-circle btn-ghost btn-sm"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <MdMoreVert size={16} />
-        </div>
-
-        <ul
-          tabIndex={0}
-          className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48"
-        >
-          <li onClick={() => onRemoveGroup?.()}>
-            <a>{removeGroupText}</a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  );
-}

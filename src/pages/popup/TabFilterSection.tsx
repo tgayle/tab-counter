@@ -14,7 +14,7 @@ import {
 } from '../../state/settings';
 import { filteredTabGroups, searchVisibleAtom } from '../../state/tabs';
 
-export function TabGroupFilterSection() {
+export function TabFilterSection() {
   const [searchVisible, toggleSearchVisible] = useAtom(searchVisibleAtom);
   const filters = useAtomValue(tabFilterAtom);
   const setTabFilterType = useSetAtom(setTabFilterTypeAtom);

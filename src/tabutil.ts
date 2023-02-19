@@ -89,27 +89,47 @@ export async function getCurrentTab(): Promise<Tab> {
   return (await chrome.tabs.query({ active: true, currentWindow: true }))[0];
 }
 
-export async function reopenIncognitoTab(tab: Tab): Promise<void> {
+export async function reopenIncognitoTab(...tabs: Tab[]): Promise<void> {
   const currentWindow = await getCurrentWindow();
-  const normalWindow = !currentWindow.incognito
-    ? currentWindow
-    : (await chrome.windows.getAll()).find((window) => !window.incognito);
 
-  if (!normalWindow) {
+  const targetWindow: BrowserWindow | null = await (async () => {
+    if (tabs.length === 1) {
+      if (!currentWindow.incognito) {
+        return currentWindow;
+      } else {
+        const lastWindow = await chrome.windows.getLastFocused({
+          windowTypes: ['normal'],
+        });
+        return lastWindow;
+      }
+    }
+
+    return null;
+  })();
+
+  const tabUrls = tabs
+    .map((tab) => tab.url)
+    .filter((url): url is string => !!url);
+
+  if (!targetWindow) {
     await chrome.windows.create({
       focused: true,
       incognito: false,
-      url: tab.url,
+      url: tabUrls,
     });
   } else {
-    await chrome.tabs.create({
-      url: tab.url,
-      active: true,
-      windowId: normalWindow.id,
-    });
+    const allTabs = tabUrls.map((url) =>
+      chrome.tabs.create({
+        url,
+        windowId: targetWindow.id,
+      }),
+    );
+
+    await Promise.all(allTabs);
+    await chrome.windows.update(targetWindow.id!, { focused: true });
   }
 
-  await chrome.tabs.remove(tab.id!);
+  await chrome.tabs.remove(tabs.map((tab) => tab.id!));
 }
 
 export async function closeTab(...tabs: Tab[]): Promise<void> {
