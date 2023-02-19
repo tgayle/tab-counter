@@ -42,7 +42,7 @@ export function GroupAccordionIconHeader({
           className="btn btn-circle btn-ghost btn-sm"
           onClick={(e) => e.stopPropagation()}
         >
-          <MdMoreVert size={16} />
+          <MdMoreVert size={20} />
         </div>
 
         <ul
