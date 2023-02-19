@@ -1,8 +1,10 @@
 import clsx from 'clsx';
-import { useAtomValue } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import React from 'react';
 import { MdMoreVert, MdOpenInNew } from 'react-icons/md';
 import { currentWindowAtom } from '../../state/tabs';
+import { selectedTabAtom } from '../../state/ui';
+import { ActiveTab } from '../../store';
 import {
   closeTab,
   focusTab,
@@ -10,6 +12,7 @@ import {
   reopenIncognitoTab,
   Tab,
 } from '../../tabutil';
+import { editingRuleState, getNewRuleFromTab } from '../rules/EditRuleDisplay';
 
 export const TabItem: React.FC<{ tab: Tab }> = ({ tab }) => {
   const currentWindow = useAtomValue(currentWindowAtom);
@@ -18,6 +21,8 @@ export const TabItem: React.FC<{ tab: Tab }> = ({ tab }) => {
       tab.windowId !== currentWindow?.id) ||
     tab.incognito;
   const canSwitchToTab = !(tab.active && tab.windowId === currentWindow?.id);
+  const setActiveTab = useSetAtom(selectedTabAtom);
+  const setEditingRuleState = useSetAtom(editingRuleState);
 
   return (
     <div className="p-2 py-1 flex flex-col items-start gap-1">
@@ -68,6 +73,18 @@ export const TabItem: React.FC<{ tab: Tab }> = ({ tab }) => {
                   <a>Reopen in normal window</a>
                 </li>
               )}
+
+              <li
+                onClick={() => {
+                  setActiveTab(ActiveTab.Settings);
+                  setEditingRuleState({
+                    rule: getNewRuleFromTab(tab),
+                  });
+                }}
+              >
+                <a>Create rule from tab</a>
+              </li>
+
               <li onClick={() => closeTab(tab)}>
                 <a>Close</a>
               </li>

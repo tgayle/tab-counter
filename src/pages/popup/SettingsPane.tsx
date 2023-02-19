@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { MdAdd, MdClose, MdRestore } from 'react-icons/md';
 import {
+  editingRuleState,
   EditRuleDisplay,
+  getEmptyRule,
+  getNewRule,
   NEW_RULE,
 } from '../../components/rules/EditRuleDisplay';
 import { RuleDisplay } from '../../components/rules/RuleDisplay';
 import { nanoid } from 'nanoid';
-import { useAtomValue, useSetAtom } from 'jotai';
+import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import {
   addRuleAtom,
   groupingRulesAtom,
@@ -23,7 +26,7 @@ export function SettingsPane() {
   const updateRule = useSetAtom(updateRuleAtom);
   const restoreDefaultRules = useSetAtom(restoreDefaultRulesAtom);
 
-  const [editingRule, setEditingRule] = useState<string | null>(null);
+  const [editingRule, setEditingRule] = useAtom(editingRuleState);
   const [rulesHelpOpen, setRulesHelpOpen] = useState(false);
 
   return (
@@ -56,11 +59,16 @@ export function SettingsPane() {
           )}
           <button
             className="btn btn-ghost btn-circle "
-            onClick={() =>
-              setEditingRule(editingRule === NEW_RULE ? null : NEW_RULE)
-            }
+            onClick={() => {
+              setEditingRule({
+                rule:
+                  editingRule.rule.id === NEW_RULE
+                    ? getEmptyRule()
+                    : getNewRule(),
+              });
+            }}
           >
-            {editingRule === NEW_RULE ? (
+            {editingRule.rule.id === NEW_RULE ? (
               <MdClose size={24} />
             ) : (
               <MdAdd size={24} />
@@ -70,22 +78,15 @@ export function SettingsPane() {
       </div>
 
       <div className="flex flex-col gap-3 pb-4">
-        {editingRule === NEW_RULE && (
+        {editingRule.rule.id === NEW_RULE && (
           <EditRuleDisplay
-            rule={{
-              id: NEW_RULE,
-              displayName: null,
-              origin: '',
-              pathname: '',
-              queryParams: [],
-            }}
-            onClose={() => setEditingRule(null)}
+            onClose={() => setEditingRule({ rule: getEmptyRule() })}
             onEditRule={(rule) => {
               addRule({
                 ...rule,
                 id: nanoid(),
               });
-              setEditingRule(null);
+              setEditingRule({ rule: getEmptyRule() });
             }}
           />
         )}
@@ -95,14 +96,20 @@ export function SettingsPane() {
             rule={rule}
             key={rule.id}
             onDelete={() => removeRule(rule)}
-            editing={rule.id === editingRule}
-            onEdit={() => setEditingRule(rule.id)}
+            editing={rule.id === editingRule.rule.id}
+            onEdit={() =>
+              setEditingRule({
+                rule,
+              })
+            }
             onEditEnd={(rule) => {
               if (rule) {
                 updateRule(rule);
               }
 
-              setEditingRule(null);
+              setEditingRule({
+                rule: getEmptyRule(),
+              });
             }}
           />
         ))}
@@ -139,7 +146,7 @@ export function SettingsPane() {
             <p>
               By default, tabs are considered duplicates when they have the same
               path. The path for the URLs above are both <code>/search</code>,
-              so without a rule, we'd count these as duplicates.
+              so without a rule, we&apos;d count these as duplicates.
             </p>
 
             <p>

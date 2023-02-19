@@ -1,14 +1,53 @@
 import React, { FC, useState } from 'react';
 import { RuleQueryParamTable } from './RuleQueryParamTable';
 import { Rule } from '../../action/grouping/TabGrouper';
+import { atom, useAtom } from 'jotai';
 
 export const NEW_RULE = 'NEW_RULE';
 
-export const EditRuleDisplay: FC<{
+export function getNewRule(): Rule {
+  return {
+    id: NEW_RULE,
+    displayName: '',
+    origin: '',
+    pathname: '',
+    queryParams: [],
+    useExactPath: false,
+  };
+}
+
+export const getEmptyRule = (): Rule => ({
+  ...getNewRule(),
+  id: '',
+});
+
+export const editingRuleState = atom<{
   rule: Rule;
+}>({
+  rule: {
+    ...getNewRule(),
+    id: '',
+  },
+});
+
+export const getNewRuleFromTab = (tab: chrome.tabs.Tab): Rule => {
+  if (!tab.url) return getNewRule();
+
+  const url = new URL(tab.url);
+  return {
+    id: NEW_RULE,
+    displayName: url.origin,
+    origin: url.origin,
+    pathname: url.pathname,
+    queryParams: [...url.searchParams.keys()],
+  };
+};
+
+export const EditRuleDisplay: FC<{
   onClose(): void;
   onEditRule(rule: Rule): void;
-}> = ({ rule, onClose, onEditRule }) => {
+}> = ({ onClose, onEditRule }) => {
+  const [{ rule }, setRule] = useAtom(editingRuleState);
   const [name, setName] = useState(rule.displayName ?? '');
   const [domain, setDomain] = useState(rule.origin ?? '');
   const [path, setPath] = useState(rule.pathname);
@@ -108,7 +147,7 @@ export const EditRuleDisplay: FC<{
               <input
                 type="checkbox"
                 className="toggle"
-                checked={rule.useExactPath}
+                checked={strictPath}
                 onChange={(e) => setStrictPath(e.target.checked)}
               />
             </label>
@@ -131,7 +170,7 @@ export const EditRuleDisplay: FC<{
               <li>
                 <strong>Domain:</strong> {domain}
               </li>
-              {ignorePath ? (
+              {ignorePath || !path ? (
                 <li>Include all links at this domain</li>
               ) : (
                 <li>
