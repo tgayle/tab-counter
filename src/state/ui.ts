@@ -14,7 +14,7 @@ export const expandedSectionsAtom = atom<Set<string | number>>(
 );
 
 export const toggleSectionExpansion = atom(
-  () => {},
+  () => undefined,
   (get, set, id: string | number) => {
     const expandedSections = new Set(get(expandedSectionsAtom));
     if (expandedSections.has(id)) {
