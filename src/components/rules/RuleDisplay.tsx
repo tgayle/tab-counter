@@ -12,9 +12,7 @@ export const RuleDisplay: FC<{
   onDelete(): void;
 }> = ({ rule, editing, onEdit, onEditEnd, onDelete }) => {
   if (editing)
-    return (
-      <EditRuleDisplay onClose={onEditEnd} rule={rule} onEditRule={onEditEnd} />
-    );
+    return <EditRuleDisplay onClose={onEditEnd} onEditRule={onEditEnd} />;
 
   return (
     <div className="card card-compact shadow-xl">

@@ -97,11 +97,7 @@ export function SettingsPane() {
             key={rule.id}
             onDelete={() => removeRule(rule)}
             editing={rule.id === editingRule.rule.id}
-            onEdit={() =>
-              setEditingRule({
-                rule,
-              })
-            }
+            onEdit={() => setEditingRule({ rule })}
             onEditEnd={(rule) => {
               if (rule) {
                 updateRule(rule);

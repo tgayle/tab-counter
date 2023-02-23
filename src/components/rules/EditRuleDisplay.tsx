@@ -1,7 +1,7 @@
 import React, { FC, useState } from 'react';
 import { RuleQueryParamTable } from './RuleQueryParamTable';
 import { Rule } from '../../action/grouping/TabGrouper';
-import { atom, useAtom } from 'jotai';
+import { atom, useAtom, useAtomValue } from 'jotai';
 
 export const NEW_RULE = 'NEW_RULE';
 
@@ -44,10 +44,11 @@ export const getNewRuleFromTab = (tab: chrome.tabs.Tab): Rule => {
 };
 
 export const EditRuleDisplay: FC<{
+  // TODO: Accept rule as prop again
   onClose(): void;
   onEditRule(rule: Rule): void;
 }> = ({ onClose, onEditRule }) => {
-  const [{ rule }, setRule] = useAtom(editingRuleState);
+  const { rule } = useAtomValue(editingRuleState);
   const [name, setName] = useState(rule.displayName ?? '');
   const [domain, setDomain] = useState(rule.origin ?? '');
   const [path, setPath] = useState(rule.pathname);
