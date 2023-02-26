@@ -1,10 +1,11 @@
 import React from 'react';
 import { MdChevronLeft, MdMoreVert } from 'react-icons/md';
+import { Tab } from '../../tabutil';
 
 type GroupAccordionIconHeaderProps = {
   onOpen: (() => void) | undefined;
   title: string;
-  tabs: chrome.tabs.Tab[];
+  tabs: Tab[];
   open: boolean | undefined;
   onRemoveGroup: (() => void) | undefined;
   removeGroupText: string;

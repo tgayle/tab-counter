@@ -2,6 +2,7 @@ import React, { FC, useState } from 'react';
 import { RuleQueryParamTable } from './RuleQueryParamTable';
 import { Rule } from '../../action/grouping/TabGrouper';
 import { atom, useAtom, useAtomValue } from 'jotai';
+import { Tab } from '../../tabutil';
 
 export const NEW_RULE = 'NEW_RULE';
 
@@ -30,7 +31,7 @@ export const editingRuleState = atom<{
   },
 });
 
-export const getNewRuleFromTab = (tab: chrome.tabs.Tab): Rule => {
+export const getNewRuleFromTab = (tab: Tab): Rule => {
   if (!tab.url) return getNewRule();
 
   const url = new URL(tab.url);

@@ -1,8 +1,9 @@
+import browser from 'webextension-polyfill';
 import { getTabInfo } from './tabutil';
 
 export function setupBadgeCount() {
-  chrome.tabs.onCreated.addListener(updateCount);
-  chrome.tabs.onRemoved.addListener(updateCount);
+  browser.tabs.onCreated.addListener(updateCount);
+  browser.tabs.onRemoved.addListener(updateCount);
   updateCount();
 }
 
@@ -24,10 +25,10 @@ async function updateCount() {
   }
 
   const color = getBadgeColor(count.all);
-  await chrome.action.setBadgeBackgroundColor({
+  await browser.action.setBadgeBackgroundColor({
     color,
   });
-  await chrome.action.setBadgeText({
+  await browser.action.setBadgeText({
     text,
   });
 }

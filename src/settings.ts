@@ -1,3 +1,4 @@
+import browser from 'webextension-polyfill';
 import {
   TabFilterType,
   GroupTabsByOptions,
@@ -48,7 +49,7 @@ class Settings {
   }
 
   private async loadInitial() {
-    const data = await chrome.storage.sync.get([
+    const data = await browser.storage.sync.get([
       FilterSettingsKeys.FILTER_TYPE,
       FilterSettingsKeys.GROUP_ORDER,
       FilterSettingsKeys.TAB_GROUPING,
@@ -79,7 +80,7 @@ class Settings {
   }
 
   private listen() {
-    chrome.storage.onChanged.addListener((changes) => {
+    browser.storage.onChanged.addListener((changes) => {
       let changed = false;
 
       if (changes[FilterSettingsKeys.FILTER_TYPE]) {
@@ -115,22 +116,22 @@ class Settings {
   }
 
   setTabFilterType = (it: TabFilterType) =>
-    chrome.storage.sync.set({
+    browser.storage.sync.set({
       [FilterSettingsKeys.FILTER_TYPE]: it,
     });
 
   setTabGrouping = (it: GroupTabsByOptions) =>
-    chrome.storage.sync.set({
+    browser.storage.sync.set({
       [FilterSettingsKeys.TAB_GROUPING]: it,
     });
 
   setGroupSortBy = (it: GroupSortOrder) =>
-    chrome.storage.sync.set({
+    browser.storage.sync.set({
       [FilterSettingsKeys.GROUP_ORDER]: it,
     });
 
   setTabSortBy = (it: TabSortOrder) =>
-    chrome.storage.sync.set({
+    browser.storage.sync.set({
       [FilterSettingsKeys.TAB_ORDER]: it,
     });
 }

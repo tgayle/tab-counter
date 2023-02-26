@@ -1,5 +1,6 @@
-export type Tab = chrome.tabs.Tab;
-export type BrowserWindow = chrome.windows.Window;
+import browser from 'webextension-polyfill';
+export type Tab = browser.Tabs.Tab;
+export type BrowserWindow = browser.Windows.Window;
 
 export type TabInfo = {
   text: string;
@@ -9,14 +10,14 @@ export type TabInfo = {
     all: number;
   };
   tabs: {
-    normal: chrome.tabs.Tab[];
-    incognito: chrome.tabs.Tab[];
-    all: chrome.tabs.Tab[];
+    normal: Tab[];
+    incognito: Tab[];
+    all: Tab[];
   };
 };
 
 export async function getTabInfo(): Promise<TabInfo> {
-  const tabs = await chrome.tabs.query({});
+  const tabs = await browser.tabs.query({});
   const incognitoTabs = tabs.filter((tab) => tab.incognito);
   const normalTabs = tabs.filter((tab) => !tab.incognito);
 
@@ -41,9 +42,9 @@ export async function getTabInfo(): Promise<TabInfo> {
 
 export async function focusTab(tab: Tab, switchToWindow = true): Promise<void> {
   const currentWindow = await getCurrentWindow();
-  await chrome.tabs.update(tab.id!, { active: true });
+  await browser.tabs.update(tab.id!, { active: true });
   if (switchToWindow && currentWindow.id !== tab.windowId) {
-    await chrome.windows.update(tab.windowId, {
+    await browser.windows.update(tab.windowId!, {
       focused: true,
     });
   }
@@ -51,10 +52,10 @@ export async function focusTab(tab: Tab, switchToWindow = true): Promise<void> {
 
 export async function moveTabToWindow(
   tab: Tab,
-  window: chrome.windows.Window,
+  window: BrowserWindow,
   shouldFocusTab = true,
 ): Promise<void> {
-  await chrome.tabs.move(tab.id!, { index: -1, windowId: window.id! });
+  await browser.tabs.move(tab.id!, { index: -1, windowId: window.id! });
 
   if (shouldFocusTab) {
     await focusTab(tab);
@@ -71,7 +72,7 @@ export function setCurrentWindow(id: number | null): void {
 
 export async function getCurrentWindow(): Promise<BrowserWindow> {
   if (typeof window !== 'undefined') {
-    return await chrome.windows.getCurrent();
+    return await browser.windows.getCurrent();
   }
 
   if (currentWindowId === null) {
@@ -79,14 +80,14 @@ export async function getCurrentWindow(): Promise<BrowserWindow> {
     console.warn(
       "getCurrentWindow called from background, but the currentWindowId hasn't been set yet. Falling back to chrome.windows.getCurrent(). (this may return the wrong window)",
     );
-    return await chrome.windows.getCurrent();
+    return await browser.windows.getCurrent();
   }
 
-  return await chrome.windows.get(currentWindowId);
+  return await browser.windows.get(currentWindowId);
 }
 
 export async function getCurrentTab(): Promise<Tab> {
-  return (await chrome.tabs.query({ active: true, currentWindow: true }))[0];
+  return (await browser.tabs.query({ active: true, currentWindow: true }))[0];
 }
 
 export async function reopenIncognitoTab(...tabs: Tab[]): Promise<void> {
@@ -97,10 +98,10 @@ export async function reopenIncognitoTab(...tabs: Tab[]): Promise<void> {
       if (!currentWindow.incognito) {
         return currentWindow;
       } else {
-        const lastWindow = await chrome.windows.getLastFocused({
+        return await browser.windows.getLastFocused({
+          // @ts-expect-error Not declared but both MDN and Chrome docs document this API
           windowTypes: ['normal'],
         });
-        return lastWindow;
       }
     }
 
@@ -111,37 +112,54 @@ export async function reopenIncognitoTab(...tabs: Tab[]): Promise<void> {
     .map((tab) => tab.url)
     .filter((url): url is string => !!url);
 
+  // For some reason, if we try to close the original tabs after opening the new ones,
+  // the original tabs won't be removed. (post-migration to webextension-polyfill)
+  await closeTab(...tabs);
+
   if (!targetWindow) {
-    await chrome.windows.create({
+    await browser.windows.create({
       focused: true,
       incognito: false,
       url: tabUrls,
     });
   } else {
     const allTabs = tabUrls.map((url) =>
-      chrome.tabs.create({
+      browser.tabs.create({
         url,
         windowId: targetWindow.id,
       }),
     );
-
     await Promise.all(allTabs);
-    await chrome.windows.update(targetWindow.id!, { focused: true });
+    await browser.windows.update(targetWindow.id!, { focused: true });
   }
-
-  await chrome.tabs.remove(tabs.map((tab) => tab.id!));
 }
 
-export async function closeTab(...tabs: Tab[]): Promise<void> {
-  await chrome.tabs.remove(tabs.map((tab) => tab.id ?? -1));
+export async function closeTab(...tabs: (Tab | number)[]): Promise<void> {
+  await browser.tabs.remove(
+    tabs.map((tab) => (typeof tab === 'number' ? tab : tab.id ?? -1)),
+  );
 }
 
-export async function closeWindow(
-  window: chrome.windows.Window,
-): Promise<void> {
-  await chrome.windows.remove(window.id!);
+export async function closeWindow(window: BrowserWindow): Promise<void> {
+  await browser.windows.remove(window.id!);
 }
 
 export async function getAllWindows() {
-  return await chrome.windows.getAll();
+  return await browser.windows.getAll();
+}
+
+export function partition<T>(
+  items: T[],
+  condition: (item: T) => boolean,
+): [T[], T[]] {
+  const trueItems: T[] = [];
+  const falseItems: T[] = [];
+  for (const item of items) {
+    if (condition(item)) {
+      trueItems.push(item);
+    } else {
+      falseItems.push(item);
+    }
+  }
+  return [trueItems, falseItems];
 }

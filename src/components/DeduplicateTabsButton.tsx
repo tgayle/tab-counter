@@ -3,6 +3,7 @@ import { useAtomValue } from 'jotai';
 import { TabFilterType } from '../action/TabFilter';
 import { tabFilterAtom } from '../state/settings';
 import { filteredTabGroups } from '../state/tabs';
+import { closeTab } from '../tabutil';
 
 export function DeduplicateTabButton() {
   const filters = useAtomValue(tabFilterAtom);
@@ -29,7 +30,7 @@ export function DeduplicateTabButton() {
       .map((tab) => tab.id)
       .filter((it): it is number => !!it);
 
-    chrome.tabs.remove(tabIds);
+    closeTab(...tabIds);
   };
 
   return (

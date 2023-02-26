@@ -1,3 +1,4 @@
+import browser from 'webextension-polyfill';
 import { atom } from 'jotai';
 import { loadable } from 'jotai/utils';
 import { TabGrouper } from '../action/grouping/TabGrouper';
@@ -52,20 +53,20 @@ tabsAtom.onMount = (setAtom) => {
   const onWindowCreate = updateTabs('windowCreated');
   const onWindowRemove = updateTabs('windowRemoved');
 
-  chrome.tabs.onCreated.addListener(onCreate);
-  chrome.tabs.onRemoved.addListener(onRemove);
-  chrome.tabs.onUpdated.addListener(onUpdate);
-  chrome.windows.onCreated.addListener(onWindowCreate);
-  chrome.windows.onRemoved.addListener(onWindowRemove);
+  browser.tabs.onCreated.addListener(onCreate);
+  browser.tabs.onRemoved.addListener(onRemove);
+  browser.tabs.onUpdated.addListener(onUpdate);
+  browser.windows.onCreated.addListener(onWindowCreate);
+  browser.windows.onRemoved.addListener(onWindowRemove);
 
   updateTabs('init')();
 
   return () => {
-    chrome.tabs.onCreated.removeListener(onCreate);
-    chrome.tabs.onRemoved.removeListener(onRemove);
-    chrome.tabs.onUpdated.removeListener(onUpdate);
-    chrome.windows.onCreated.removeListener(onWindowCreate);
-    chrome.windows.onRemoved.removeListener(onWindowRemove);
+    browser.tabs.onCreated.removeListener(onCreate);
+    browser.tabs.onRemoved.removeListener(onRemove);
+    browser.tabs.onUpdated.removeListener(onUpdate);
+    browser.windows.onCreated.removeListener(onWindowCreate);
+    browser.windows.onRemoved.removeListener(onWindowRemove);
   };
 };
 

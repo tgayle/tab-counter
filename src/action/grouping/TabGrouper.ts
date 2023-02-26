@@ -1,4 +1,5 @@
-import { BrowserWindow, getAllWindows, Tab } from '../../tabutil';
+import browser from 'webextension-polyfill';
+import { BrowserWindow, getAllWindows, partition, Tab } from '../../tabutil';
 import { GroupSortOrder, TabFilterType, TabSortOrder } from '../TabFilter';
 import { Filters } from '../TabFilterProcessor';
 import { TabStats } from '../TabStats';
@@ -78,7 +79,7 @@ export class TabGrouper {
   }
 
   private async getActiveRules(): Promise<Rule[]> {
-    const { rules } = await chrome.storage.sync.get({
+    const { rules } = await browser.storage.sync.get({
       rules: defaultRules,
     });
 
@@ -107,6 +108,7 @@ export class TabGrouper {
       type,
       stats.duplicates,
     ).reduce((acc, tab) => {
+      tab.windowId ??= -1;
       const tabs = acc[tab.windowId] || [];
       tabs.push(tab);
       acc[tab.windowId] = tabs;
@@ -308,7 +310,7 @@ export class TabGrouper {
 
   async updateRules(rules: Rule[]) {
     this.activeRules = rules;
-    await chrome.storage.sync.set({
+    await browser.storage.sync.set({
       rules,
     });
   }
@@ -316,7 +318,7 @@ export class TabGrouper {
   observeRules(onRulesChanged: (rules: Rule[]) => void) {
     this.getActiveRules().then(onRulesChanged);
     const listener = (
-      changes: Record<string, chrome.storage.StorageChange>,
+      changes: Record<string, browser.Storage.StorageChange>,
       areaName: string,
     ) => {
       if (areaName !== 'sync') return;
@@ -324,17 +326,17 @@ export class TabGrouper {
         onRulesChanged(changes.rules.newValue ?? []);
       }
     };
-    chrome.storage.onChanged.addListener(listener);
+    browser.storage.onChanged.addListener(listener);
     return listener;
   }
 
   unobserveRules(
     listener: (
-      changes: Record<string, chrome.storage.StorageChange>,
+      changes: Record<string, browser.Storage.StorageChange>,
       areaName: string,
     ) => void,
   ) {
-    chrome.storage.onChanged.removeListener(listener);
+    browser.storage.onChanged.removeListener(listener);
   }
 }
 
@@ -452,17 +454,4 @@ function groupRulesByOrigin(rules: Rule[]) {
     rulesByOrigin[origin].push(rule);
   }
   return rulesByOrigin;
-}
-
-function partition<T>(items: T[], condition: (item: T) => boolean): [T[], T[]] {
-  const trueItems: T[] = [];
-  const falseItems: T[] = [];
-  for (const item of items) {
-    if (condition(item)) {
-      trueItems.push(item);
-    } else {
-      falseItems.push(item);
-    }
-  }
-  return [trueItems, falseItems];
 }

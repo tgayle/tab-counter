@@ -1,3 +1,4 @@
+import browser from 'webextension-polyfill';
 import { getCurrentWindow, Tab } from '../tabutil';
 import { TabGroupResult } from './grouping/TabGrouper';
 import {
@@ -44,15 +45,12 @@ type IPCHelpers = {
 
 async function sendIpc<R>(msg: BaseIPCMessage<string, any, any>['msg']) {
   const id = (await getCurrentWindow()).id;
-  return new Promise<R>((res) =>
-    chrome.runtime.sendMessage(
-      {
-        ...msg,
-        windowId: id,
-      },
-      res,
-    ),
-  );
+  const res: R = await browser.runtime.sendMessage({
+    ...msg,
+    windowId: id,
+  });
+
+  return res;
 }
 
 type BaseIPCMessage<T extends string, I, R> = {
