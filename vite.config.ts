@@ -8,6 +8,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 export default defineConfig({
   build: {
     sourcemap: true,
+    minify: false,
   },
   plugins: [
     react(),
