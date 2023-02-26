@@ -40,8 +40,16 @@ export async function getTabInfo(): Promise<TabInfo> {
   };
 }
 
-export async function focusTab(tab: Tab, switchToWindow = true): Promise<void> {
+export async function focusTab(
+  tab: Tab | number,
+  switchToWindow = true,
+): Promise<void> {
   const currentWindow = await getCurrentWindow();
+
+  if (typeof tab === 'number') {
+    tab = await browser.tabs.get(tab);
+  }
+
   await browser.tabs.update(tab.id!, { active: true });
   if (switchToWindow && currentWindow.id !== tab.windowId) {
     await browser.windows.update(tab.windowId!, {

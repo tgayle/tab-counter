@@ -30,7 +30,6 @@ async function main() {
   });
 
   getCurrentTab().then((tab) => tab && updateTabContextMenu(tab));
-  // setupDupeLinkMenu();
   setupBadgeCount();
 }
 
