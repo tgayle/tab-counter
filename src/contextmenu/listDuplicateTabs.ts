@@ -165,7 +165,10 @@ async function createRootMenu({
             checked: tab.active && tab.windowId === activeWindow.id,
             enabled:
               tab.active && tab.windowId === activeWindow.id ? false : true,
-            type: tab.active ? 'radio' : 'normal',
+            type:
+              tab.active && tab.windowId === activeWindow.id
+                ? 'radio'
+                : 'normal',
           });
         }
 
