@@ -106,10 +106,14 @@ export async function reopenIncognitoTab(...tabs: Tab[]): Promise<void> {
       if (!currentWindow.incognito) {
         return currentWindow;
       } else {
-        return await browser.windows.getLastFocused({
+        const window = await browser.windows.getLastFocused({
           // @ts-expect-error Not declared but both MDN and Chrome docs document this API
           windowTypes: ['normal'],
         });
+
+        if (window.incognito) {
+          return null;
+        }
       }
     }
 
@@ -122,8 +126,6 @@ export async function reopenIncognitoTab(...tabs: Tab[]): Promise<void> {
 
   // For some reason, if we try to close the original tabs after opening the new ones,
   // the original tabs won't be removed. (post-migration to webextension-polyfill)
-  await closeTab(...tabs);
-
   if (!targetWindow) {
     await browser.windows.create({
       focused: true,
@@ -140,6 +142,7 @@ export async function reopenIncognitoTab(...tabs: Tab[]): Promise<void> {
     await Promise.all(allTabs);
     await browser.windows.update(targetWindow.id!, { focused: true });
   }
+  await closeTab(...tabs);
 }
 
 export async function closeTab(...tabs: (Tab | number)[]): Promise<void> {
