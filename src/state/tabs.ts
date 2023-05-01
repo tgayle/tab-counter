@@ -41,10 +41,27 @@ const tabsAtom = atom<Awaited<ReturnType<typeof getTabInfo>>['tabs']>({
 });
 
 tabsAtom.onMount = (setAtom) => {
-  const updateTabs = (reason: string) => async () => {
-    console.log(`Updating Tabs: ${reason}`);
-    const { tabs } = await getTabInfo();
-    setAtom(tabs);
+  let timer: {
+    id: NodeJS.Timeout | number;
+    origin: string;
+  } | null = null;
+
+  const updateTabs = (reason: string) => () => {
+    if (timer) {
+      console.log(`Debounced a tab update, type = ${timer.origin}`);
+      clearTimeout(timer.id as NodeJS.Timeout);
+      timer = null;
+    }
+
+    timer = {
+      id: setTimeout(async () => {
+        console.log(`${Date.now()} Updating Tabs: ${reason}`);
+        const { tabs } = await getTabInfo();
+        setAtom(tabs);
+        timer = null;
+      }, 150),
+      origin: reason,
+    };
   };
 
   const onCreate = updateTabs('onCreated');
