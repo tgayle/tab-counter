@@ -37,7 +37,6 @@ browser.contextMenus.onClicked.addListener(async (info) => {
 let rootMenuExists = false;
 
 export async function updateTabContextMenu(tab: Tab) {
-  console.log('Update context menu?', tab.id);
   setCurrentWindow(tab.windowId ?? -1);
 
   if (!tab.url) return;
@@ -60,6 +59,8 @@ export async function updateTabContextMenu(tab: Tab) {
   const {
     tabs: { all: allTabs },
   } = await getTabInfo();
+
+  console.group(`Update Context Menu: ${Date.now()}`);
 
   const duplicateGroups = grouper.filterByRules(allTabs, {
     tabs: {
@@ -84,6 +85,8 @@ export async function updateTabContextMenu(tab: Tab) {
     },
     query: origin,
   });
+
+  console.groupEnd();
 
   const similarTabs = duplicateGroups.results
     .filter((group) => group.tabs.some((it) => it.id === tab.id))
@@ -140,8 +143,6 @@ async function createRootMenu({
         if (browser.runtime.lastError) {
           return reject(browser.runtime.lastError);
         }
-
-        console.log(browser.runtime.lastError);
 
         const [activeTabs, inactiveTabs] = partition(
           subitems,
