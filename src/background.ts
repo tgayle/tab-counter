@@ -2,7 +2,7 @@ import browser from 'webextension-polyfill';
 import { TabGrouper } from './action/grouping/TabGrouper';
 import { setupBadgeCount } from './badge';
 import { updateTabContextMenu } from './contextmenu/listDuplicateTabs';
-import { getCurrentTab } from './tabutil';
+import { getCurrentTab, Tab } from './tabutil';
 
 enum InstallReason {
   INSTALL = 'install',
@@ -11,11 +11,11 @@ enum InstallReason {
 
 async function main() {
   browser.tabs.onUpdated.addListener(async (_, __, tab) => {
-    updateTabContextMenu(tab);
+    updateContextMenu(tab);
   });
 
   browser.tabs.onActivated.addListener(async (info) =>
-    browser.tabs.get(info.tabId).then(updateTabContextMenu),
+    browser.tabs.get(info.tabId).then(updateContextMenu),
   );
 
   browser.runtime.onInstalled.addListener(async (details) => {
@@ -29,8 +29,21 @@ async function main() {
     }
   });
 
-  getCurrentTab().then((tab) => tab && updateTabContextMenu(tab));
+  getCurrentTab().then((tab) => tab && updateContextMenu(tab));
   setupBadgeCount();
+}
+
+let pendingUpdate: NodeJS.Timeout | null = null;
+function updateContextMenu(tab: Tab) {
+  if (pendingUpdate) {
+    clearTimeout(pendingUpdate);
+    pendingUpdate = null;
+  }
+
+  pendingUpdate = setTimeout(() => {
+    updateTabContextMenu(tab);
+    pendingUpdate = null;
+  }, 200);
 }
 
 main();
