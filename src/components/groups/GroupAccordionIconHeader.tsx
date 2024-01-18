@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import React from 'react';
 import { MdChevronLeft, MdMoreVert } from 'react-icons/md';
 import { Tab } from '../../tabutil';
@@ -9,6 +10,8 @@ type GroupAccordionIconHeaderProps = {
   open: boolean | undefined;
   onRemoveGroup: (() => void) | undefined;
   removeGroupText: string;
+  mergeGroupText: string;
+  onMergeGroup?: () => void;
 };
 export function GroupAccordionIconHeader({
   onOpen,
@@ -17,6 +20,8 @@ export function GroupAccordionIconHeader({
   removeGroupText,
   tabs,
   title,
+  mergeGroupText,
+  onMergeGroup,
 }: GroupAccordionIconHeaderProps) {
   return (
     <div
@@ -50,6 +55,15 @@ export function GroupAccordionIconHeader({
           tabIndex={0}
           className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48"
         >
+          {mergeGroupText && (
+            <li
+              onClick={() => onMergeGroup?.()}
+              className={clsx(!onMergeGroup && 'disabled')}
+            >
+              <a>{mergeGroupText}</a>
+            </li>
+          )}
+
           <li onClick={() => onRemoveGroup?.()}>
             <a>{removeGroupText}</a>
           </li>

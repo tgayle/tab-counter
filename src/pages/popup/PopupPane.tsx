@@ -1,6 +1,14 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ActiveTab } from '../../store';
-import { closeTab, closeWindow, Tab as TabType } from '../../tabutil';
+import {
+  BrowserWindow,
+  canTabMoveToWindow,
+  closeTab,
+  closeWindow,
+  getCurrentWindow,
+  moveTabToWindow,
+  Tab as TabType,
+} from '../../tabutil';
 import { TabFilterSection } from './TabFilterSection';
 import { MdSettings } from 'react-icons/md';
 import { SettingsPane } from './SettingsPane';
@@ -122,6 +130,7 @@ const TabGroupItems = () => {
   const expandedSections = useAtomValue(expandedSectionsAtom);
   const toggleSection = useSetAtom(toggleSectionExpansion);
   const groupAtom = useAtomValue(filteredTabGroups);
+  const currentWindow = useCurrentWindow();
 
   const lastValue = useRef(
     groupAtom.state === 'hasData' ? groupAtom.data : null,
@@ -136,7 +145,7 @@ const TabGroupItems = () => {
   const groups =
     groupAtom.state === 'hasData' ? groupAtom.data : lastValue.current;
 
-  if (!groups) {
+  if (!groups || !currentWindow) {
     return null;
   }
 
@@ -152,6 +161,14 @@ const TabGroupItems = () => {
               onOpen={() => toggleSection(rule?.id ?? index)}
               removeGroupText="Close All"
               onRemoveGroup={() => closeTab(...tabs)}
+              mergeGroupText="Move all tabs here"
+              onMergeGroup={
+                canTabMoveToWindow(tabs[0], currentWindow)
+                  ? async () => {
+                      moveTabToWindow(tabs, currentWindow);
+                    }
+                  : undefined
+              }
             />
           ))
         : groups.type === 'window'
@@ -164,9 +181,29 @@ const TabGroupItems = () => {
               onOpen={() => toggleSection(window.id ?? index)}
               onRemoveGroup={() => closeWindow(window)}
               removeGroupText="Close Window"
+              mergeGroupText="Move all tabs here"
+              onMergeGroup={
+                canTabMoveToWindow(tabs[0], currentWindow)
+                  ? async () => {
+                      moveTabToWindow(tabs, currentWindow);
+                    }
+                  : undefined
+              }
             />
           ))
         : `how did you get here? (grouping=${JSON.stringify(groups)})`}
     </>
   );
 };
+
+function useCurrentWindow() {
+  const [currentWindow, setCurrentWindow] = useState<BrowserWindow | null>(
+    null,
+  );
+
+  useEffect(() => {
+    getCurrentWindow().then((window) => setCurrentWindow(window));
+  }, []);
+
+  return currentWindow;
+}

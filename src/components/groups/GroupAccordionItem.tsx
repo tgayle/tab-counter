@@ -11,6 +11,8 @@ type GroupAccordionItemProps = {
   removeGroupText?: string;
   open?: boolean;
   onOpen?(): void;
+  mergeGroupText: string;
+  onMergeGroup?: () => void;
 };
 
 export const GroupAccordionItem = ({
@@ -20,6 +22,8 @@ export const GroupAccordionItem = ({
   open,
   removeGroupText = 'Close Window',
   onOpen,
+  mergeGroupText,
+  onMergeGroup,
 }: GroupAccordionItemProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -41,6 +45,8 @@ export const GroupAccordionItem = ({
           open={open}
           onRemoveGroup={onRemoveGroup}
           removeGroupText={removeGroupText}
+          mergeGroupText={mergeGroupText}
+          onMergeGroup={onMergeGroup}
         />
       )}
       <div ref={containerRef}>

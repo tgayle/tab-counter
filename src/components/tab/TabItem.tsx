@@ -6,6 +6,7 @@ import { currentWindowAtom } from '../../state/tabs';
 import { selectedTabAtom } from '../../state/ui';
 import { ActiveTab } from '../../store';
 import {
+  canTabMoveToWindow,
   closeTab,
   focusTab,
   moveTabToWindow,
@@ -17,9 +18,7 @@ import { editingRuleState, getNewRuleFromTab } from '../rules/EditRuleDisplay';
 export const TabItem: React.FC<{ tab: Tab }> = ({ tab }) => {
   const currentWindow = useAtomValue(currentWindowAtom);
   const canMoveTabToWindow =
-    (currentWindow?.incognito === tab.incognito &&
-      tab.windowId !== currentWindow?.id) ||
-    tab.incognito;
+    canTabMoveToWindow(tab, currentWindow) || tab.incognito;
   const canSwitchToTab = !(tab.active && tab.windowId === currentWindow?.id);
   const setActiveTab = useSetAtom(selectedTabAtom);
   const setEditingRuleState = useSetAtom(editingRuleState);

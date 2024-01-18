@@ -52,21 +52,34 @@ export async function focusTab(
 
   await browser.tabs.update(tab.id!, { active: true });
   if (switchToWindow && currentWindow.id !== tab.windowId) {
-    await browser.windows.update(tab.windowId!, {
-      focused: true,
-    });
+    await focusWindow(tab.windowId!);
   }
 }
 
+export async function focusWindow(
+  window: BrowserWindow | number,
+): Promise<void> {
+  if (typeof window === 'number') {
+    window = await browser.windows.get(window);
+  }
+
+  await browser.windows.update(window.id!, { focused: true });
+}
+
 export async function moveTabToWindow(
-  tab: Tab,
+  tab: Tab | Tab[],
   window: BrowserWindow,
   shouldFocusTab = true,
 ): Promise<void> {
-  await browser.tabs.move(tab.id!, { index: -1, windowId: window.id! });
+  const ids = Array.isArray(tab) ? tab.map((t) => t.id!) : [tab.id!];
+  await browser.tabs.move(ids, { index: -1, windowId: window.id! });
 
   if (shouldFocusTab) {
-    await focusTab(tab);
+    if (Array.isArray(tab)) {
+      await focusWindow(window);
+    } else {
+      await focusTab(tab);
+    }
   }
 }
 
@@ -157,6 +170,10 @@ export async function closeWindow(window: BrowserWindow): Promise<void> {
 
 export async function getAllWindows() {
   return await browser.windows.getAll();
+}
+
+export function canTabMoveToWindow(tab: Tab, window: BrowserWindow | null) {
+  return window?.incognito === tab.incognito && tab.windowId !== window?.id;
 }
 
 export function partition<T>(
