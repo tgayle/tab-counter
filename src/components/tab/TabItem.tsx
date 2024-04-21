@@ -75,7 +75,7 @@ export const TabItem: React.FC<{ tab: Tab }> = ({ tab }) => {
 
               <li
                 onClick={() => {
-                  setActiveTab(ActiveTab.Settings);
+                  setActiveTab(ActiveTab.Tools);
                   setEditingRuleState({
                     rule: getNewRuleFromTab(tab),
                   });

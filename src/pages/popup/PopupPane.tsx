@@ -13,10 +13,9 @@ import {
   closeWindow,
   getCurrentWindow,
   moveTabToWindow,
-  Tab as TabType,
 } from '../../tabutil';
 import { TabFilterSection } from './TabFilterSection';
-import { MdSettings } from 'react-icons/md';
+import { MdBuild } from 'react-icons/md';
 import { SettingsPane } from './SettingsPane';
 import autoAnimate from '@formkit/auto-animate';
 import clsx from 'clsx';
@@ -54,7 +53,7 @@ export const PopupPane = () => {
       ? [ActiveTab.Normal, 'Normal', normalTabs.length]
       : null,
     incogTabs.length ? [ActiveTab.Incog, 'Incognito', incogTabs.length] : null,
-    [ActiveTab.Settings, <MdSettings size={16} key="settings_icon" />, 0],
+    [ActiveTab.Tools, <MdBuild size={16} key="settings_icon" />, 0],
   ];
 
   useEffect(() => {
@@ -76,11 +75,7 @@ export const PopupPane = () => {
       />
 
       <main className="h-full">
-        {selectedTab === ActiveTab.Settings ? (
-          <SettingsPane />
-        ) : (
-          <OpenTabGroup />
-        )}
+        {selectedTab === ActiveTab.Tools ? <SettingsPane /> : <OpenTabGroup />}
       </main>
     </div>
   );
@@ -233,7 +228,7 @@ function TabFilterRow({
             onClick={() => setSelectedTab(type)}
           >
             {displayText}{' '}
-            {type !== ActiveTab.Settings &&
+            {type !== ActiveTab.Tools &&
             (!hasOverflow || selectedTab === type) ? (
               <span className="min-w-0 tab-tab-count">({count})</span>
             ) : (
