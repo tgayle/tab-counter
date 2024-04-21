@@ -1,4 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, {
+  ReactNode,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { ActiveTab } from '../../store';
 import {
   BrowserWindow,
@@ -39,13 +45,16 @@ export const PopupPane = () => {
     normal: normalTabs,
   } = useAtomValue(allTabsAtom);
 
-  const tabTitles = [
-    `All (${allTabs.length})`,
+  const tabTitles: (
+    | [type: ActiveTab, name: ReactNode, count: number]
+    | null
+  )[] = [
+    [ActiveTab.All, 'All', allTabs.length],
     normalTabs.length && incogTabs.length
-      ? `Normal (${normalTabs.length})`
+      ? [ActiveTab.Normal, 'Normal', normalTabs.length]
       : null,
-    incogTabs.length ? `Incognito (${incogTabs.length})` : null,
-    <MdSettings size={16} key="settings_icon" />,
+    incogTabs.length ? [ActiveTab.Incog, 'Incognito', incogTabs.length] : null,
+    [ActiveTab.Settings, <MdSettings size={16} key="settings_icon" />, 0],
   ];
 
   useEffect(() => {
@@ -60,22 +69,11 @@ export const PopupPane = () => {
 
   return (
     <div style={{ width: '350px', maxWidth: '350px' }}>
-      <div className="tabs w-full">
-        {tabTitles.map((title, index) =>
-          title ? (
-            <button
-              key={index}
-              className={clsx(
-                'tab tab-lifted px-3',
-                selectedTab === index && 'tab-active grow',
-              )}
-              onClick={() => setSelectedTab(index)}
-            >
-              {title}
-            </button>
-          ) : null,
-        )}
-      </div>
+      <TabFilterRow
+        tabTitles={tabTitles}
+        selectedTab={selectedTab}
+        setSelectedTab={setSelectedTab}
+      />
 
       <main className="h-full">
         {selectedTab === ActiveTab.Settings ? (
@@ -195,6 +193,58 @@ const TabGroupItems = () => {
     </>
   );
 };
+
+function TabFilterRow({
+  selectedTab,
+  setSelectedTab,
+  tabTitles,
+}: {
+  tabTitles: ([type: ActiveTab, name: ReactNode, count: number] | null)[];
+  selectedTab: ActiveTab;
+  setSelectedTab: (update: ActiveTab) => void;
+}) {
+  const [hasOverflow, setHasOverflow] = useState(false);
+
+  useLayoutEffect(
+    () => {
+      const allTab = document.querySelector('.tab:nth-child(1) tab-tab-count');
+
+      setHasOverflow(allTab ? allTab.clientWidth < allTab.scrollWidth : false);
+    },
+    tabTitles.map((it) => it?.[2]),
+  );
+
+  return (
+    <div className="tabs w-full flex-nowrap">
+      {tabTitles.map((title) => {
+        if (!title) {
+          return null;
+        }
+
+        const [type, displayText, count] = title;
+
+        return (
+          <button
+            key={type}
+            className={clsx(
+              'tab tab-lifted px-3 whitespace-pre flex-nowrap max-w-full ',
+              selectedTab === type && 'tab-active grow',
+            )}
+            onClick={() => setSelectedTab(type)}
+          >
+            {displayText}{' '}
+            {type !== ActiveTab.Settings &&
+            (!hasOverflow || selectedTab === type) ? (
+              <span className="min-w-0 tab-tab-count">({count})</span>
+            ) : (
+              ''
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 function useCurrentWindow() {
   const [currentWindow, setCurrentWindow] = useState<BrowserWindow | null>(
