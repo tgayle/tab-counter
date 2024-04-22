@@ -124,7 +124,7 @@ export class TabGrouper {
     const stats = this.getStatsUsingRules(tabs, this.activeRules, strategy);
 
     const groups = await strategy.buildResult(
-      tabs,
+      this.filterByTabType(tabs, filters.tabs.type, stats.duplicates),
       this.activeRules,
       filters,
       stats,
