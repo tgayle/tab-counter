@@ -18,7 +18,7 @@ export function IncognitoTabOptions() {
   }
 
   return (
-    <div className="absolute bottom-0 flex p-2 justify-center w-full">
+    <div className="fixed bottom-0 flex p-2 justify-center w-full">
       <button
         className="btn btn-sm"
         onClick={() => {

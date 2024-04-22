@@ -24,7 +24,7 @@ export const TabItem: React.FC<{ tab: Tab }> = ({ tab }) => {
   const setEditingRuleState = useSetAtom(editingRuleState);
 
   return (
-    <div className="p-2 py-1 flex flex-col items-start gap-1">
+    <div className="p-2 py-1 flex flex-col items-start gap-1 bg-white">
       <div className="flex w-full items-center">
         <div className="grow max-w-[80%] overflow-clip">
           <p className="truncate" title={tab.title}>

@@ -67,14 +67,14 @@ export const PopupPane = () => {
   }, [selectedTab, normalTabs.length, incogTabs.length]);
 
   return (
-    <div style={{ width: '350px', maxWidth: '350px' }}>
+    <div className="w-full max-w-full h-full max-h-screen flex flex-col">
       <TabFilterRow
         tabTitles={tabTitles}
         selectedTab={selectedTab}
         setSelectedTab={setSelectedTab}
       />
 
-      <main className="h-full">
+      <main className=" overflow-y-auto flex flex-col">
         {selectedTab === ActiveTab.Tools ? <SettingsPane /> : <OpenTabGroup />}
       </main>
     </div>
@@ -210,7 +210,7 @@ function TabFilterRow({
   );
 
   return (
-    <div className="tabs w-full flex-nowrap">
+    <div className="tabs w-full flex-nowrap sticky top-0 bg-white z-20">
       {tabTitles.map((title) => {
         if (!title) {
           return null;
