@@ -67,14 +67,14 @@ export const PopupPane = () => {
   }, [selectedTab, normalTabs.length, incogTabs.length]);
 
   return (
-    <div className="w-full max-w-full h-full max-h-screen flex flex-col">
+    <div className="w-full max-w-full h-screen max-h-screen flex flex-col">
       <TabFilterRow
         tabTitles={tabTitles}
         selectedTab={selectedTab}
         setSelectedTab={setSelectedTab}
       />
 
-      <main className=" overflow-y-auto flex flex-col">
+      <main className=" overflow-y-auto flex flex-col flex-grow ">
         {selectedTab === ActiveTab.Tools ? <ToolsPane /> : <OpenTabGroup />}
       </main>
     </div>
