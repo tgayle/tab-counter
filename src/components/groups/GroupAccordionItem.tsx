@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Tab as TabType } from '../../tabutil';
-import { TabItem } from '../tab/TabItem';
+import { TabItem, TabItemActions } from '../tab/TabItem';
 import autoAnimate from '@formkit/auto-animate';
 import { GroupAccordionIconHeader } from '../../components/groups/GroupAccordionIconHeader';
 
@@ -11,8 +11,12 @@ type GroupAccordionItemProps = {
   removeGroupText?: string;
   open?: boolean;
   onOpen?(): void;
-  mergeGroupText: string;
+  mergeGroupText?: string;
   onMergeGroup?: () => void;
+  alwaysShowGroup?: boolean;
+  menuDisabled?: boolean;
+
+  disabledOptions?: TabItemActions[];
 };
 
 export const GroupAccordionItem = ({
@@ -24,6 +28,9 @@ export const GroupAccordionItem = ({
   onOpen,
   mergeGroupText,
   onMergeGroup,
+  alwaysShowGroup,
+  menuDisabled,
+  disabledOptions,
 }: GroupAccordionItemProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -35,9 +42,11 @@ export const GroupAccordionItem = ({
     return null;
   }
 
+  const singleItemMode = tabs.length === 1 && !alwaysShowGroup;
+
   return (
     <div>
-      {tabs.length > 1 && (
+      {!singleItemMode && (
         <GroupAccordionIconHeader
           onOpen={onOpen}
           title={title}
@@ -47,16 +56,25 @@ export const GroupAccordionItem = ({
           removeGroupText={removeGroupText}
           mergeGroupText={mergeGroupText}
           onMergeGroup={onMergeGroup}
+          menuDisabled={menuDisabled}
         />
       )}
       <div ref={containerRef}>
-        {(open || tabs.length === 1) && <BrowserTabList tabs={tabs} />}
+        {(open || singleItemMode) && (
+          <BrowserTabList tabs={tabs} hiddenOptions={disabledOptions} />
+        )}
       </div>
     </div>
   );
 };
 
-export const BrowserTabList = ({ tabs }: { tabs: TabType[] }) => {
+export const BrowserTabList = ({
+  tabs,
+  hiddenOptions,
+}: {
+  tabs: TabType[];
+  hiddenOptions?: TabItemActions[];
+}) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -66,7 +84,7 @@ export const BrowserTabList = ({ tabs }: { tabs: TabType[] }) => {
   return (
     <div className="divide-y" ref={containerRef}>
       {tabs.map((tab) => (
-        <TabItem tab={tab} key={tab.id} />
+        <TabItem tab={tab} key={tab.id} hiddenOptions={hiddenOptions} />
       ))}
     </div>
   );

@@ -2,6 +2,7 @@ import React, { MouseEventHandler, ReactNode } from 'react';
 import { RulesPage } from './settings/rules/RulesPage';
 import { atom, useAtom } from 'jotai';
 import Features from '../../Features';
+import { TabOrganizerPage } from './features/tab-organizer/TabOrganizerPage';
 
 enum ToolsTab {
   Rules = 'rules',
@@ -25,7 +26,7 @@ export function ToolsPane() {
     case ToolsTab.Rules:
       return <RulesPage onBack={() => setActiveTab(null)} />;
     case ToolsTab.Organize:
-      return <p>todo</p>;
+      return <TabOrganizerPage onBack={() => setActiveTab(null)} />;
   }
 }
 

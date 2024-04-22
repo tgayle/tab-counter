@@ -10,7 +10,8 @@ type GroupAccordionIconHeaderProps = {
   open: boolean | undefined;
   onRemoveGroup: (() => void) | undefined;
   removeGroupText: string;
-  mergeGroupText: string;
+  mergeGroupText?: string;
+  menuDisabled?: boolean;
   onMergeGroup?: () => void;
 };
 export function GroupAccordionIconHeader({
@@ -22,10 +23,11 @@ export function GroupAccordionIconHeader({
   title,
   mergeGroupText,
   onMergeGroup,
+  menuDisabled,
 }: GroupAccordionIconHeaderProps) {
   return (
     <div
-      className="flex font-medium p-2 items-center cursor-pointer hover:bg-gray-200 transition-colors"
+      className="flex font-medium p-2 items-center cursor-pointer hover:bg-gray-200 transition-colors z-[1]"
       onClick={onOpen}
     >
       <span className="grow truncate text-md" title={title}>
@@ -43,17 +45,18 @@ export function GroupAccordionIconHeader({
       </span>
 
       <div className="dropdown dropdown-end">
-        <div
+        <button
           tabIndex={0}
           className="btn btn-circle btn-ghost btn-sm"
           onClick={(e) => e.stopPropagation()}
+          disabled={menuDisabled}
         >
           <MdMoreVert size={20} />
-        </div>
+        </button>
 
         <ul
           tabIndex={0}
-          className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48"
+          className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48 z-[1]"
         >
           {mergeGroupText && (
             <li
@@ -64,7 +67,10 @@ export function GroupAccordionIconHeader({
             </li>
           )}
 
-          <li onClick={() => onRemoveGroup?.()}>
+          <li
+            onClick={() => onRemoveGroup?.()}
+            className={clsx(!onRemoveGroup && 'disabled')}
+          >
             <a>{removeGroupText}</a>
           </li>
         </ul>
