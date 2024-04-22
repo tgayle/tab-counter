@@ -8,7 +8,7 @@ import { BrowserWindow, getCurrentWindow, getTabInfo } from '../tabutil';
 import { groupingRulesAtom } from './rules';
 import { tabFilterAtom } from './settings';
 import { expandedSectionsAtom, selectedTabAtom } from './ui';
-import { TabGroupingStrategies } from '../action/grouping/TabGroupingStrategy';
+import { TabGroupingStrategies } from '../action/grouping/TabGroupingStrategies';
 
 export const tabGrouper = new TabGrouper();
 export const currentWindowAtom = atom<BrowserWindow | null>(null);

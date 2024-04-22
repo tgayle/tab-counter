@@ -14,7 +14,7 @@ import {
   partition,
   setCurrentWindow,
 } from '../tabutil';
-import { TabGroupingStrategies } from '../action/grouping/TabGroupingStrategy';
+import { TabGroupingStrategies } from '../action/grouping/TabGroupingStrategies';
 
 const ROOT_MENU = 'tab_counter_root_menu';
 

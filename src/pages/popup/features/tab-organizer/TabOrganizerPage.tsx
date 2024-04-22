@@ -15,7 +15,7 @@ import {
   TabFilterType,
   TabSortOrder,
 } from '../../../../action/TabFilter';
-import { TabGroupingStrategies } from '../../../../action/grouping/TabGroupingStrategy';
+import { TabGroupingStrategies } from '../../../../action/grouping/TabGroupingStrategies';
 import { GroupAccordionItem } from '../../../../components/groups/GroupAccordionItem';
 import { TabItemActions } from '../../../../components/tab/TabItem';
 

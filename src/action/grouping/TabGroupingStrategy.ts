@@ -8,9 +8,6 @@ import {
 import { Filters } from '../TabFilterProcessor';
 import { GroupSortOrder, TabSortOrder } from '../TabFilter';
 import { TabStats } from '../TabStats';
-import { ExpressionGroupingStrategy } from './ExpressionGroupingStrategy';
-import { WindowGroupingStrategy } from './WindowGroupingStrategy';
-import { OriginGroupingStrategy } from './OriginGroupingStrategy';
 
 export abstract class TabGroupingStrategy<
   Type extends string,
@@ -83,9 +80,3 @@ export abstract class TabGroupingStrategy<
     });
   }
 }
-
-export const TabGroupingStrategies = {
-  Origin: new OriginGroupingStrategy(),
-  Window: new WindowGroupingStrategy(),
-  Expression: new ExpressionGroupingStrategy(),
-};
