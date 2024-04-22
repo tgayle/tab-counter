@@ -14,6 +14,7 @@ import {
   partition,
   setCurrentWindow,
 } from '../tabutil';
+import { TabGroupingStrategies } from '../action/grouping/TabGroupingStrategy';
 
 const ROOT_MENU = 'tab_counter_root_menu';
 
@@ -62,29 +63,37 @@ export async function updateTabContextMenu(tab: Tab) {
 
   console.group(`Update Context Menu: ${Date.now()}`);
 
-  const duplicateGroups = grouper.filterByRules(allTabs, {
-    tabs: {
-      type: TabFilterType.Duplicates,
-      sortBy: TabSortOrder.Asc,
+  const duplicateGroups = await grouper.filter(
+    allTabs,
+    {
+      tabs: {
+        type: TabFilterType.Duplicates,
+        sortBy: TabSortOrder.Asc,
+      },
+      grouping: {
+        groupBy: GroupTabsByOptions.Domain,
+        sortBy: GroupSortOrder.Asc,
+      },
+      query: origin,
     },
-    grouping: {
-      groupBy: GroupTabsByOptions.Domain,
-      sortBy: GroupSortOrder.Asc,
-    },
-    query: origin,
-  });
+    TabGroupingStrategies.Origin,
+  );
 
-  const relatedGroups = grouper.filterByRules(allTabs, {
-    tabs: {
-      type: TabFilterType.All,
-      sortBy: TabSortOrder.Asc,
+  const relatedGroups = await grouper.filter(
+    allTabs,
+    {
+      tabs: {
+        type: TabFilterType.All,
+        sortBy: TabSortOrder.Asc,
+      },
+      grouping: {
+        groupBy: GroupTabsByOptions.Domain,
+        sortBy: GroupSortOrder.Asc,
+      },
+      query: origin,
     },
-    grouping: {
-      groupBy: GroupTabsByOptions.Domain,
-      sortBy: GroupSortOrder.Asc,
-    },
-    query: origin,
-  });
+    TabGroupingStrategies.Origin,
+  );
 
   console.groupEnd();
 

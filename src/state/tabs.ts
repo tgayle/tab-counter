@@ -8,6 +8,7 @@ import { BrowserWindow, getCurrentWindow, getTabInfo } from '../tabutil';
 import { groupingRulesAtom } from './rules';
 import { tabFilterAtom } from './settings';
 import { expandedSectionsAtom, selectedTabAtom } from './ui';
+import { TabGroupingStrategies } from '../action/grouping/TabGroupingStrategy';
 
 export const tabGrouper = new TabGrouper();
 export const currentWindowAtom = atom<BrowserWindow | null>(null);
@@ -108,9 +109,17 @@ export const filteredTabGroups = loadable(
       filters.grouping.groupBy === GroupTabsByOptions.Domain ||
       filters.tabs.type === TabFilterType.Duplicates
     ) {
-      return tabGrouper.filterByRules(targetTabs, filters);
+      return tabGrouper.filter(
+        targetTabs,
+        filters,
+        TabGroupingStrategies.Origin,
+      );
     } else {
-      return await tabGrouper.filterByWindows(targetTabs, filters);
+      return await tabGrouper.filter(
+        targetTabs,
+        filters,
+        TabGroupingStrategies.Window,
+      );
     }
   }),
 );

@@ -1,9 +1,10 @@
 import browser from 'webextension-polyfill';
-import { BrowserWindow, getAllWindows, partition, Tab } from '../../tabutil';
-import { GroupSortOrder, TabFilterType, TabSortOrder } from '../TabFilter';
+import { BrowserWindow, Tab } from '../../tabutil';
+import { TabFilterType } from '../TabFilter';
 import { Filters } from '../TabFilterProcessor';
 import { TabStats } from '../TabStats';
 import { defaultRules } from './defaultRules';
+import { TabGroupingStrategy } from './TabGroupingStrategy';
 
 export type Rule = {
   id: string;
@@ -12,6 +13,7 @@ export type Rule = {
   pathname: string | null;
   queryParams: string[];
   useExactPath?: boolean;
+  titleRegex?: string;
 };
 
 type ParsedUri = {
@@ -24,9 +26,9 @@ type ParsedUri = {
   tab?: Tab;
 };
 
-type ParsedUriWithTab = Exclude<ParsedUri, 'tab'> & { tab: Tab };
+export type ParsedUriWithTab = Exclude<ParsedUri, 'tab'> & { tab: Tab };
 
-const tabToUri = (tab: Tab): ParsedUriWithTab | null => {
+export const tabToUri = (tab: Tab): ParsedUriWithTab | null => {
   if (!tab.url) return null;
   try {
     const url = new URL(tab.url);
@@ -45,37 +47,60 @@ const tabToUri = (tab: Tab): ParsedUriWithTab | null => {
   }
 };
 
-type DomainGroupedOutputResult = {
+export type DomainGroupedOutputResult = {
   origin: string;
   tabs: Tab[];
   displayName: string;
   rule: Rule | null;
 };
-type DomainGroupedOutput = {
+export type DomainGroupedOutput = {
   type: 'domain';
   stats: TabStats;
   results: DomainGroupedOutputResult[];
 };
 
-type WindowGroupedOutputResult = {
+export type WindowGroupedOutputResult = {
   displayName: string;
   window: BrowserWindow;
   tabs: Tab[];
 };
 
-type WindowGroupedOutput = {
+export type WindowGroupedOutput = {
   type: 'window';
   stats: TabStats;
   results: WindowGroupedOutputResult[];
 };
 
-export type TabGroupResult = WindowGroupedOutput | DomainGroupedOutput;
+export type ExpressionGroupedOutput = {
+  type: 'expression';
+  stats: TabStats;
+  results: ExpressionGroupedOutputResult[];
+};
+
+export type ExpressionGroupedOutputResult = {
+  displayName: string;
+  rule: Rule;
+  tabs: Tab[];
+};
+
+export type TabGroupOutputResult =
+  | WindowGroupedOutputResult
+  | DomainGroupedOutputResult
+  | ExpressionGroupedOutputResult;
+export type TabGroupResult =
+  | WindowGroupedOutput
+  | DomainGroupedOutput
+  | ExpressionGroupedOutput;
 
 export class TabGrouper {
   activeRules: Rule[] = [];
 
-  constructor() {
-    this.getActiveRules();
+  constructor(public windowId: number = -1, overrideRules?: Rule[]) {
+    if (overrideRules) {
+      this.activeRules = overrideRules;
+    } else {
+      this.getActiveRules();
+    }
   }
 
   private async getActiveRules(): Promise<Rule[]> {
@@ -88,144 +113,55 @@ export class TabGrouper {
     return this.activeRules;
   }
 
-  windowId = -1;
-
-  async filterByWindows(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async filter<T extends TabGroupingStrategy<any, any, TabGroupResult>>(
     tabs: Tab[],
-    {
-      tabs: { sortBy: tabOrder, type },
-      query,
-      grouping: { sortBy: groupOrder },
-    }: Filters,
-  ): Promise<WindowGroupedOutput> {
+    filters: Filters,
+    strategy: T,
+  ): Promise<ReturnType<T['buildResult']>> {
     const start = Date.now();
-    const windows = await getAllWindows();
-    tabs = this.filterBySearch(tabs, query);
-    const stats = this.getStatsUsingRules(tabs, this.activeRules);
+    tabs = this.filterBySearch(tabs, filters.query);
+    const stats = this.getStatsUsingRules(tabs, this.activeRules, strategy);
 
-    const tabsByWindow = this.filterByTabType(
+    const groups = await strategy.buildResult(
       tabs,
-      type,
-      stats.duplicates,
-    ).reduce((acc, tab) => {
-      tab.windowId ??= -1;
-      const tabs = acc[tab.windowId] || [];
-      tabs.push(tab);
-      acc[tab.windowId] = tabs;
-      return acc;
-    }, {} as Record<number, Tab[]>);
-
-    const groups = windows
-      .map((window): WindowGroupedOutputResult => {
-        return {
-          window,
-          displayName: `Window ${window.id}`,
-          tabs: this.sortTabs(tabsByWindow[window.id!] || [], tabOrder),
-        };
-      })
-      .filter((it) => it.tabs.length);
-
-    const results = this.sortGroups(groups, groupOrder);
-
-    console.log(
-      `Sorted ${tabs.length} tabs into ${windows.length} windows in ${
-        Date.now() - start
-      }ms`,
-    );
-    return {
-      type: 'window',
-      stats,
-      results,
-    };
-  }
-
-  filterByRules(tabs: Tab[], filters: Filters): DomainGroupedOutput {
-    const {
-      query,
-      grouping: { sortBy: groupOrder },
-    } = filters;
-    const { sortBy: tabOrder, type } = filters.tabs;
-    const start = Date.now();
-    tabs = this.filterBySearch(tabs, query);
-    const stats = this.getStatsUsingRules(tabs, this.activeRules);
-    const [tabsByRule, unparsableTabs] = bucketTabsByRules(
-      this.filterByTabType(tabs, type, stats.duplicates),
       this.activeRules,
+      filters,
+      stats,
     );
-
-    const groups = [...tabsByRule.entries()].map(
-      ([rule, tabs]): DomainGroupedOutputResult => {
-        return {
-          rule,
-          displayName: rule.displayName ?? rule.origin,
-          origin: rule.origin,
-          tabs: this.sortTabs(
-            tabs.map((it) => it.tab),
-            tabOrder,
-          ),
-        };
-      },
-    );
-
-    const results = [
-      ...this.sortGroups(groups, groupOrder),
-      {
-        displayName: 'Unknown',
-        origin: 'unknown',
-        rule: null,
-        tabs: unparsableTabs,
-      },
-    ].filter((it) => it.tabs.length);
 
     console.log(
-      `Grouped ${tabs.length} tabs with ${this.activeRules.length} rules in ${
+      `Sorted ${tabs.length} tabs into ${groups.results.length} groups in ${
         Date.now() - start
       }ms`,
     );
-    return {
-      type: 'domain',
-      stats,
-      results,
-    };
+
+    return groups as ReturnType<T['buildResult']>;
   }
 
-  private sortGroups<
-    T extends DomainGroupedOutputResult | WindowGroupedOutputResult,
-  >(items: T[], by: GroupSortOrder) {
-    return items.sort((a, b) => {
-      switch (by) {
-        case GroupSortOrder.Count:
-          return b.tabs.length - a.tabs.length;
-        case GroupSortOrder.Asc:
-          return a.displayName < b.displayName
-            ? -1
-            : a.displayName > b.displayName
-            ? 1
-            : 0;
-        case GroupSortOrder.Desc:
-          return a.displayName > b.displayName
-            ? -1
-            : a.displayName < b.displayName
-            ? 1
-            : 0;
-      }
-    });
+  protected filterByTabType(
+    tabs: Tab[],
+    type: TabFilterType,
+    knownDuplicates: Tab[],
+  ): Tab[] {
+    switch (type) {
+      case TabFilterType.All:
+        return tabs;
+      case TabFilterType.Audible:
+        return tabs.filter((it) => it.audible);
+      case TabFilterType.CurrentWindow:
+        return tabs.filter((it) => it.windowId === this.windowId);
+      case TabFilterType.Duplicates:
+        return tabs.filter((it) => knownDuplicates.includes(it));
+    }
   }
 
-  private sortTabs(tabs: Tab[], by: TabSortOrder): Tab[] {
-    return tabs.sort((a, b) => {
-      const titleA = a.title ?? a.url ?? a.index;
-      const titleB = b.title ?? b.url ?? b.index;
-      switch (by) {
-        case TabSortOrder.Asc:
-          return titleA < titleB ? -1 : titleA > titleB ? 1 : 0;
-        case TabSortOrder.Desc:
-          return titleA > titleB ? -1 : titleA < titleB ? 1 : 0;
-      }
-    });
-  }
-
-  private getStatsUsingRules(tabs: Tab[], rules: Rule[]): TabStats {
+  private getStatsUsingRules(
+    tabs: Tab[],
+    rules: Rule[],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    strategy: TabGroupingStrategy<any, any, any>,
+  ): TabStats {
     const audible: Tab[] = [];
     const muted: Tab[] = [];
 
@@ -254,7 +190,7 @@ export class TabGrouper {
       }
 
       if (!hadRule) {
-        const defaultRule = getDefaultRuleForOrigin(uri.origin);
+        const defaultRule = strategy.getDefaultRule(uri);
         const tabKey = getTabKeyFromRule(uri, defaultRule);
         if (tabKey) {
           const similarTabs = tabsByKey[tabKey] || [];
@@ -271,23 +207,6 @@ export class TabGrouper {
         .filter((it) => it.length > 1)
         .flat(),
     };
-  }
-
-  private filterByTabType(
-    tabs: Tab[],
-    type: TabFilterType,
-    knownDuplicates: Tab[],
-  ): Tab[] {
-    switch (type) {
-      case TabFilterType.All:
-        return tabs;
-      case TabFilterType.Audible:
-        return tabs.filter((it) => it.audible);
-      case TabFilterType.CurrentWindow:
-        return tabs.filter((it) => it.windowId === this.windowId);
-      case TabFilterType.Duplicates:
-        return tabs.filter((it) => knownDuplicates.includes(it));
-    }
   }
 
   private filterBySearch(tabs: Tab[], query: string): Tab[] {
@@ -340,54 +259,6 @@ export class TabGrouper {
   }
 }
 
-function bucketTabsByRules(tabs: Tab[], rules: Rule[]) {
-  const rulesByOrigin = groupRulesByOrigin(rules);
-  const [tabsByOrigin, unparsableTabs] = groupTabsByOrigin(tabs);
-  const tabsWithAssociatedRule: [tab: ParsedUriWithTab, ruleUsed: Rule][] = [];
-
-  for (const origin in tabsByOrigin) {
-    // Create a catch-all rule for each origin
-    {
-      const originRules = rulesByOrigin[origin] ?? [];
-      originRules.push(getDefaultRuleForOrigin(origin));
-      rulesByOrigin[origin] = originRules;
-    }
-
-    const originTabs = tabsByOrigin[origin];
-
-    const [normalRules, catchallRules] = partition(
-      rulesByOrigin[origin],
-      (rule) => rule.pathname !== null,
-    );
-
-    tabLoop: for (const tab of originTabs) {
-      for (const rule of normalRules) {
-        if (isRuleApplicableToTab(tab, rule)) {
-          tabsWithAssociatedRule.push([tab, rule]);
-          continue tabLoop;
-        }
-      }
-
-      // None of the normal rules could handle this tab, try the catchall rules
-      for (const rule of catchallRules) {
-        if (isRuleApplicableToTab(tab, rule)) {
-          tabsWithAssociatedRule.push([tab, rule]);
-          continue tabLoop;
-        }
-      }
-    }
-  }
-
-  const ruleToTab = new Map<Rule, ParsedUriWithTab[]>();
-  for (const [tab, rule] of tabsWithAssociatedRule) {
-    const tabs = ruleToTab.get(rule) ?? [];
-    tabs.push(tab);
-    ruleToTab.set(rule, tabs);
-  }
-
-  return [ruleToTab, unparsableTabs] as const;
-}
-
 function getTabKeyFromRule(uri: ParsedUri, rule: Rule) {
   if (!isRuleApplicableToTab(uri, rule)) {
     return null;
@@ -399,7 +270,21 @@ function getTabKeyFromRule(uri: ParsedUri, rule: Rule) {
     .join('-')}`;
 }
 
-function isRuleApplicableToTab(uri: ParsedUri, rule: Rule): boolean {
+export function isRuleApplicableToTab(uri: ParsedUri, rule: Rule): boolean {
+  if (rule.titleRegex) {
+    const parsedRegex = (() => {
+      try {
+        return new RegExp(rule.titleRegex);
+      } catch (e) {
+        return null;
+      }
+    })();
+
+    if (!parsedRegex || !uri.tab?.title) return false;
+
+    return parsedRegex.test(uri.tab.title);
+  }
+
   if (uri.origin !== rule.origin) return false;
   if (rule.pathname) {
     if (rule.useExactPath && uri.pathname !== rule.pathname) return false;
@@ -412,46 +297,4 @@ function isRuleApplicableToTab(uri: ParsedUri, rule: Rule): boolean {
   }
 
   return true;
-}
-
-function getDefaultRuleForOrigin(origin: string): Rule {
-  return {
-    origin: origin,
-    id: `default_${origin}`,
-    pathname: null,
-    queryParams: [],
-    displayName: origin.startsWith('https://') ? origin.slice(8) : origin,
-  };
-}
-
-function groupTabsByOrigin(tabs: Tab[]) {
-  const tabsByOrigin: Record<string, ParsedUriWithTab[]> = {};
-  const invalidTabs: Tab[] = [];
-  for (const tab of tabs) {
-    const uri = tabToUri(tab);
-
-    if (!uri) {
-      invalidTabs.push(tab);
-      continue;
-    }
-
-    const { origin } = uri;
-    if (!tabsByOrigin[origin]) {
-      tabsByOrigin[origin] = [];
-    }
-    tabsByOrigin[origin].push(uri);
-  }
-  return [tabsByOrigin, invalidTabs] as const;
-}
-
-function groupRulesByOrigin(rules: Rule[]) {
-  const rulesByOrigin: Record<string, Rule[]> = {};
-  for (const rule of rules) {
-    const { origin } = rule;
-    if (!rulesByOrigin[origin]) {
-      rulesByOrigin[origin] = [];
-    }
-    rulesByOrigin[origin].push(rule);
-  }
-  return rulesByOrigin;
 }
