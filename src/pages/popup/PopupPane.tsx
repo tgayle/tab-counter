@@ -16,7 +16,7 @@ import {
 } from '../../tabutil';
 import { TabFilterSection } from './TabFilterSection';
 import { MdBuild } from 'react-icons/md';
-import { SettingsPane } from './SettingsPane';
+import { ToolsPane } from './ToolsPane';
 import autoAnimate from '@formkit/auto-animate';
 import clsx from 'clsx';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
@@ -75,7 +75,7 @@ export const PopupPane = () => {
       />
 
       <main className=" overflow-y-auto flex flex-col">
-        {selectedTab === ActiveTab.Tools ? <SettingsPane /> : <OpenTabGroup />}
+        {selectedTab === ActiveTab.Tools ? <ToolsPane /> : <OpenTabGroup />}
       </main>
     </div>
   );

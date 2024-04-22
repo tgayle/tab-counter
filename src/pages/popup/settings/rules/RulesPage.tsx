@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { MdAdd, MdClose, MdRestore } from 'react-icons/md';
+import { MdAdd, MdChevronLeft, MdClose, MdRestore } from 'react-icons/md';
 import {
   editingRuleState,
   EditRuleDisplay,
   getEmptyRule,
   getNewRule,
   NEW_RULE,
-} from '../../components/rules/EditRuleDisplay';
-import { RuleDisplay } from '../../components/rules/RuleDisplay';
+} from '../../../../components/rules/EditRuleDisplay';
+import { RuleDisplay } from '../../../../components/rules/RuleDisplay';
 import { nanoid } from 'nanoid';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import {
@@ -16,10 +16,10 @@ import {
   removeRuleAtom,
   restoreDefaultRulesAtom,
   updateRuleAtom,
-} from '../../state/rules';
+} from '../../../../state/rules';
 import clsx from 'clsx';
 
-export function SettingsPane() {
+export function RulesPage({ onBack }: { onBack?: () => void }) {
   const rules = useAtomValue(groupingRulesAtom);
   const addRule = useSetAtom(addRuleAtom);
   const removeRule = useSetAtom(removeRuleAtom);
@@ -37,14 +37,26 @@ export function SettingsPane() {
       )}
     >
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl">
-          Rules{' '}
-          <button
-            className="text-xs opacity-60 "
-            onClick={() => setRulesHelpOpen(true)}
-          >
-            what?
-          </button>
+        <h2 className="text-2xl flex items-center">
+          {onBack && (
+            <button
+              className="btn-ghost btn btn-sm btn-square"
+              aria-label="Back"
+              onClick={onBack}
+            >
+              <MdChevronLeft size={24} />
+            </button>
+          )}
+
+          <span>
+            Rules
+            <button
+              className="text-xs opacity-60 pl-2 "
+              onClick={() => setRulesHelpOpen(true)}
+            >
+              what?
+            </button>
+          </span>
         </h2>
         <div>
           {rules.length === 0 && (
