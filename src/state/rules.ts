@@ -28,6 +28,6 @@ export const updateRuleAtom = atom(null, async (get, set, rule: Rule) => {
   await tabGrouper.updateRules(rules);
 });
 
-export const restoreDefaultRulesAtom = atom(null, async (get, set) => {
+export const restoreDefaultRulesAtom = atom(null, async () => {
   await tabGrouper.restoreDefaultRules();
 });

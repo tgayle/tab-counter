@@ -20,7 +20,7 @@ export function IncognitoTabOptions() {
   return (
     <div className="fixed bottom-0 flex p-2 justify-center w-full">
       <button
-        className="btn btn-sm"
+        className="btn btn-neutral btn-sm"
         onClick={() => {
           const allTabs = tabResults.data.results.flatMap(
             (group) => group.tabs,

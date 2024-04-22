@@ -202,15 +202,24 @@ function TabFilterRow({
 
   useLayoutEffect(
     () => {
-      const allTab = document.querySelector('.tab:nth-child(1) tab-tab-count');
+      const hasOverflow = Array.from(
+        document.querySelectorAll<HTMLElement>('.tab .tab-tab-count'),
+      ).some((it) => it.clientWidth < it.scrollWidth);
 
-      setHasOverflow(allTab ? allTab.clientWidth < allTab.scrollWidth : false);
+      setHasOverflow(hasOverflow);
     },
     tabTitles.map((it) => it?.[2]),
   );
 
   return (
-    <div className="tabs w-full flex-nowrap sticky top-0 bg-white z-20">
+    <div
+      className="tabs max-w-full tabs-bordered w-full wrap sticky top-0 bg-white z-20"
+      style={{
+        gridTemplateColumns: `repeat(${
+          tabTitles.filter(Boolean).length
+        }, minmax(0, 1fr))`,
+      }}
+    >
       {tabTitles.map((title) => {
         if (!title) {
           return null;
@@ -222,8 +231,8 @@ function TabFilterRow({
           <button
             key={type}
             className={clsx(
-              'tab tab-lifted px-3 whitespace-pre flex-nowrap max-w-full ',
-              selectedTab === type && 'tab-active grow',
+              'tab px-3 whitespace-pre flex-nowrap max-w-full ',
+              selectedTab === type && 'tab-active col-span-2',
             )}
             onClick={() => setSelectedTab(type)}
           >

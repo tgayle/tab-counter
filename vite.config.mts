@@ -1,4 +1,4 @@
-import { chromeExtension } from '@crxjs/vite-plugin';
+import { crx } from '@crxjs/vite-plugin';
 import zip from 'rollup-plugin-zip';
 import manifest from './src/manifest';
 import react from '@vitejs/plugin-react';
@@ -12,7 +12,7 @@ export default defineConfig({
   },
   plugins: [
     react(),
-    chromeExtension({ manifest }),
+    crx({ manifest }),
     isProduction && zip({ dir: 'releases' }),
   ],
 });

@@ -37,7 +37,7 @@ export function RulesPage({ onBack }: { onBack?: () => void }) {
       )}
     >
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl flex items-center">
+        <h2 className="text-xl flex items-center">
           {onBack && (
             <button
               className="btn-ghost btn btn-sm btn-square"
