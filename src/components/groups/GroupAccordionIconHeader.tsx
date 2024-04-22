@@ -13,6 +13,7 @@ type GroupAccordionIconHeaderProps = {
   mergeGroupText?: string;
   menuDisabled?: boolean;
   onMergeGroup?: () => void;
+  extraMenuOptions?: React.ReactNode;
 };
 export function GroupAccordionIconHeader({
   onOpen,
@@ -24,6 +25,7 @@ export function GroupAccordionIconHeader({
   mergeGroupText,
   onMergeGroup,
   menuDisabled,
+  extraMenuOptions,
 }: GroupAccordionIconHeaderProps) {
   return (
     <div
@@ -58,6 +60,8 @@ export function GroupAccordionIconHeader({
           tabIndex={0}
           className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48 z-[1]"
         >
+          {extraMenuOptions}
+
           {mergeGroupText && (
             <li
               onClick={() => onMergeGroup?.()}
@@ -69,7 +73,7 @@ export function GroupAccordionIconHeader({
 
           <li
             onClick={() => onRemoveGroup?.()}
-            className={clsx(!onRemoveGroup && 'disabled')}
+            className={clsx(!onRemoveGroup && 'disabled pointer-events-none')}
           >
             <a>{removeGroupText}</a>
           </li>

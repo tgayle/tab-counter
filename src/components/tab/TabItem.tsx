@@ -136,3 +136,12 @@ export const TabItem: React.FC<{
     return children;
   }
 };
+
+export function dropdownItemHandler<T extends React.SyntheticEvent>(
+  action: (event: T) => any | Promise<any>,
+) {
+  return async (event: T) => {
+    await action(event);
+    (document.activeElement as HTMLElement | null)?.blur();
+  };
+}

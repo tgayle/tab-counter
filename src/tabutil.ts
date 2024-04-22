@@ -1,5 +1,5 @@
 import browser from 'webextension-polyfill';
-export type Tab = browser.Tabs.Tab;
+export type Tab = chrome.tabs.Tab | browser.Tabs.Tab;
 export type BrowserWindow = browser.Windows.Window;
 
 export type TabInfo = {
@@ -174,6 +174,33 @@ export async function getAllWindows() {
 
 export function canTabMoveToWindow(tab: Tab, window: BrowserWindow | null) {
   return window?.incognito === tab.incognito && tab.windowId !== window?.id;
+}
+
+export async function createTabGroup(
+  name: string,
+  tabs: Tab[],
+  window: BrowserWindow | null,
+  group: chrome.tabGroups.TabGroup | null,
+) {
+  window ||= await getCurrentWindow();
+
+  const groupId = await chrome.tabs.group({
+    createProperties: {
+      windowId: window.id,
+    },
+    groupId: group?.id,
+    tabIds: tabs
+      .filter((tab) =>
+        group ? group.id !== (tab as chrome.tabs.Tab).groupId : true,
+      )
+      .map((tab) => tab.id)
+      .filter((id): id is number => id !== undefined),
+  });
+
+  return await chrome.tabGroups.update(groupId, {
+    title: name,
+    collapsed: true,
+  });
 }
 
 export function partition<T>(

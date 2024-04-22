@@ -63,19 +63,14 @@ export abstract class TabGroupingStrategy<
     return items.sort((a, b) => {
       switch (by) {
         case GroupSortOrder.Count:
+          if (a.tabs.length === b.tabs.length) {
+            return a.displayName.localeCompare(b.displayName);
+          }
           return b.tabs.length - a.tabs.length;
         case GroupSortOrder.Asc:
-          return a.displayName < b.displayName
-            ? -1
-            : a.displayName > b.displayName
-            ? 1
-            : 0;
+          return a.displayName.localeCompare(b.displayName);
         case GroupSortOrder.Desc:
-          return a.displayName > b.displayName
-            ? -1
-            : a.displayName < b.displayName
-            ? 1
-            : 0;
+          return b.displayName.localeCompare(a.displayName);
       }
     });
   }

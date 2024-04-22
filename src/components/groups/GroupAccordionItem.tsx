@@ -15,8 +15,8 @@ type GroupAccordionItemProps = {
   onMergeGroup?: () => void;
   alwaysShowGroup?: boolean;
   menuDisabled?: boolean;
-
-  disabledOptions?: TabItemActions[];
+  renderTab?: (tab: TabType) => React.ReactNode;
+  extraMenuOptions?: React.ReactNode;
 };
 
 export const GroupAccordionItem = ({
@@ -30,7 +30,8 @@ export const GroupAccordionItem = ({
   onMergeGroup,
   alwaysShowGroup,
   menuDisabled,
-  disabledOptions,
+  renderTab,
+  extraMenuOptions,
 }: GroupAccordionItemProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -57,11 +58,12 @@ export const GroupAccordionItem = ({
           mergeGroupText={mergeGroupText}
           onMergeGroup={onMergeGroup}
           menuDisabled={menuDisabled}
+          extraMenuOptions={extraMenuOptions}
         />
       )}
       <div ref={containerRef}>
         {(open || singleItemMode) && (
-          <BrowserTabList tabs={tabs} hiddenOptions={disabledOptions} />
+          <BrowserTabList tabs={tabs} renderTab={renderTab} />
         )}
       </div>
     </div>
@@ -70,9 +72,10 @@ export const GroupAccordionItem = ({
 
 export const BrowserTabList = ({
   tabs,
-  hiddenOptions,
+  renderTab = (tab) => <TabItem tab={tab} key={tab.id} />,
 }: {
   tabs: TabType[];
+  renderTab?: (tab: TabType) => React.ReactNode;
   hiddenOptions?: TabItemActions[];
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -83,9 +86,7 @@ export const BrowserTabList = ({
 
   return (
     <div className="divide-y" ref={containerRef}>
-      {tabs.map((tab) => (
-        <TabItem tab={tab} key={tab.id} hiddenOptions={hiddenOptions} />
-      ))}
+      {tabs.map(renderTab)}
     </div>
   );
 };

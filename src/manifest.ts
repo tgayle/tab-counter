@@ -16,7 +16,7 @@ const manifest = defineManifest({
   manifest_version: 3,
   version_name: hash,
   version: version,
-  permissions: ['tabs', 'storage', 'contextMenus'],
+  permissions: ['tabs', 'storage', 'contextMenus', 'tabGroups'],
   background: {
     service_worker: 'src/background.ts',
     type: 'module',

@@ -138,7 +138,7 @@ function FilterDropdown({
 
       <ul
         tabIndex={0}
-        className="dropdown-content menu rounded-box w-32 shadow-lg bg-base-100"
+        className="dropdown-content menu rounded-box w-32 shadow-lg bg-base-100 z-[1]"
       >
         <li className="menu-title">
           <span>Order</span>
