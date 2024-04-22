@@ -14,6 +14,7 @@ export enum GroupSortOrder {
 export enum GroupTabsByOptions {
   Domain = 'domain',
   Window = 'window',
+  TabGroups = 'tab_groups',
 }
 
 export enum TabSortOrder {

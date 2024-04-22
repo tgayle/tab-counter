@@ -1,5 +1,5 @@
 import browser from 'webextension-polyfill';
-export type Tab = chrome.tabs.Tab | browser.Tabs.Tab;
+export type Tab = browser.Tabs.Tab & { groupId?: number };
 export type BrowserWindow = browser.Windows.Window;
 
 export type TabInfo = {

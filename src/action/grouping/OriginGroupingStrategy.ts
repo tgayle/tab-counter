@@ -2,14 +2,24 @@ import { Tab, partition } from '../../tabutil';
 import { Filters } from '../TabFilterProcessor';
 import { TabStats } from '../TabStats';
 import {
-  DomainGroupedOutput,
   ParsedUriWithTab,
   tabToUri,
-  DomainGroupedOutputResult,
   isRuleApplicableToTab,
   Rule,
 } from './TabGrouper';
 import { TabGroupingStrategy } from './TabGroupingStrategy';
+
+export type DomainGroupedOutputResult = {
+  origin: string;
+  tabs: Tab[];
+  displayName: string;
+  rule: Rule | null;
+};
+export type DomainGroupedOutput = {
+  type: 'domain';
+  stats: TabStats;
+  results: DomainGroupedOutputResult[];
+};
 
 export class OriginGroupingStrategy extends TabGroupingStrategy<
   'origin',

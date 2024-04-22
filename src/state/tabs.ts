@@ -109,10 +109,16 @@ export const filteredTabGroups = loadable(
       filters.grouping.groupBy === GroupTabsByOptions.Domain ||
       filters.tabs.type === TabFilterType.Duplicates
     ) {
-      return tabGrouper.filter(
+      return await tabGrouper.filter(
         targetTabs,
         filters,
         TabGroupingStrategies.Origin,
+      );
+    } else if (filters.grouping.groupBy === GroupTabsByOptions.TabGroups) {
+      return await tabGrouper.filter(
+        targetTabs,
+        filters,
+        TabGroupingStrategies.TabGroup,
       );
     } else {
       return await tabGrouper.filter(

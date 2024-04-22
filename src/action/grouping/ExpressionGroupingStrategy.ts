@@ -1,13 +1,20 @@
 import { Tab } from '../../tabutil';
 import { Filters } from '../TabFilterProcessor';
 import { TabStats } from '../TabStats';
-import {
-  ExpressionGroupedOutput,
-  ParsedUriWithTab,
-  ExpressionGroupedOutputResult,
-  Rule,
-} from './TabGrouper';
+import { ParsedUriWithTab, Rule } from './TabGrouper';
 import { TabGroupingStrategy } from './TabGroupingStrategy';
+
+export type ExpressionGroupedOutput = {
+  type: 'expression';
+  stats: TabStats;
+  results: ExpressionGroupedOutputResult[];
+};
+
+export type ExpressionGroupedOutputResult = {
+  displayName: string;
+  rule: Rule;
+  tabs: Tab[];
+};
 
 export class ExpressionGroupingStrategy extends TabGroupingStrategy<
   'expression',

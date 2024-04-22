@@ -6,14 +6,11 @@ import {
   TabSortOrder,
   TabFilterType,
 } from '../../../../action/TabFilter';
-import {
-  ExpressionGroupedOutput,
-  Rule,
-  TabGrouper,
-} from '../../../../action/grouping/TabGrouper';
+import { Rule, TabGrouper } from '../../../../action/grouping/TabGrouper';
 import { TabGroupingStrategies } from '../../../../action/grouping/TabGroupingStrategies';
 import { allTabsAtom, currentWindowAtom } from '../../../../state/tabs';
 import { Tab } from '../../../../tabutil';
+import { ExpressionGroupedOutput } from '../../../../action/grouping/ExpressionGroupingStrategy';
 
 export type TabExpressionCaptureGroup = {
   definition: string;

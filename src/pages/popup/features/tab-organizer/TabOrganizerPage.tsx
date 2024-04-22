@@ -12,7 +12,7 @@ import {
   useEvaluateTabExpression,
 } from './ExpressionEvaluator';
 import { Tab, createTabGroup } from '../../../../tabutil';
-import { ExpressionGroupedOutputResult } from '../../../../action/grouping/TabGrouper';
+import { ExpressionGroupedOutputResult } from '../../../../action/grouping/ExpressionGroupingStrategy';
 
 export function TabOrganizerPage({ onBack }: { onBack: () => void }) {
   const [expression, setExpression] = useState('');

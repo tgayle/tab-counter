@@ -1,13 +1,20 @@
-import { Tab, getAllWindows } from '../../tabutil';
+import { BrowserWindow, Tab, getAllWindows } from '../../tabutil';
 import { Filters } from '../TabFilterProcessor';
 import { TabStats } from '../TabStats';
-import {
-  WindowGroupedOutput,
-  ParsedUriWithTab,
-  WindowGroupedOutputResult,
-  Rule,
-} from './TabGrouper';
+import { ParsedUriWithTab, Rule } from './TabGrouper';
 import { TabGroupingStrategy } from './TabGroupingStrategy';
+
+export type WindowGroupedOutputResult = {
+  displayName: string;
+  window: BrowserWindow;
+  tabs: Tab[];
+};
+
+export type WindowGroupedOutput = {
+  type: 'window';
+  stats: TabStats;
+  results: WindowGroupedOutputResult[];
+};
 
 export class WindowGroupingStrategy extends TabGroupingStrategy<
   'window',

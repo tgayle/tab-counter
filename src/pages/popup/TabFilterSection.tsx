@@ -114,6 +114,7 @@ const SortOrderOptions = [
 const GroupByOptions = [
   { label: 'Domain', value: GroupTabsByOptions.Domain },
   { label: 'Window', value: GroupTabsByOptions.Window },
+  { label: 'Tab Groups', value: GroupTabsByOptions.TabGroups },
 ];
 
 function FilterDropdown({
@@ -181,7 +182,7 @@ const FilterMenuItem = ({
   onClick?: () => void;
 }) => {
   return (
-    <li className={selected ? 'bordered' : ''} onClick={onClick}>
+    <li className={selected ? 'active font-bold' : ''} onClick={onClick}>
       <a>{children}</a>
     </li>
   );

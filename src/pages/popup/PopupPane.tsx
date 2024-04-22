@@ -184,6 +184,20 @@ const TabGroupItems = () => {
               }
             />
           ))
+        : groups.type === 'tab_group'
+        ? groups.results.map(({ tabs, tabGroup: group, displayName }) => (
+            <GroupAccordionItem
+              title={displayName || group.title || tabs[0]?.title || 'Unkown'}
+              tabs={tabs}
+              key={group.id}
+              open={expandedSections.has(group.id)}
+              onOpen={() => toggleSection(group.id)}
+              onRemoveGroup={() => closeTab(...tabs)}
+              removeGroupText="Close Group"
+              mergeGroupText="Move all tabs here"
+              alwaysShowGroup
+            />
+          ))
         : `how did you get here? (grouping=${JSON.stringify(groups)})`}
     </>
   );

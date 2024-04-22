@@ -1,10 +1,26 @@
 import browser from 'webextension-polyfill';
-import { BrowserWindow, Tab } from '../../tabutil';
+import { Tab } from '../../tabutil';
 import { TabFilterType } from '../TabFilter';
 import { Filters } from '../TabFilterProcessor';
 import { TabStats } from '../TabStats';
 import { defaultRules } from './defaultRules';
 import { TabGroupingStrategy } from './TabGroupingStrategy';
+import {
+  WindowGroupedOutput,
+  WindowGroupedOutputResult,
+} from './WindowGroupingStrategy';
+import {
+  TabGroupedOutput,
+  TabGroupedOutputResult,
+} from './TabGroupGroupingStrategy';
+import {
+  DomainGroupedOutputResult,
+  DomainGroupedOutput,
+} from './OriginGroupingStrategy';
+import {
+  ExpressionGroupedOutputResult,
+  ExpressionGroupedOutput,
+} from './ExpressionGroupingStrategy';
 
 export type Rule = {
   id: string;
@@ -47,50 +63,16 @@ export const tabToUri = (tab: Tab): ParsedUriWithTab | null => {
   }
 };
 
-export type DomainGroupedOutputResult = {
-  origin: string;
-  tabs: Tab[];
-  displayName: string;
-  rule: Rule | null;
-};
-export type DomainGroupedOutput = {
-  type: 'domain';
-  stats: TabStats;
-  results: DomainGroupedOutputResult[];
-};
-
-export type WindowGroupedOutputResult = {
-  displayName: string;
-  window: BrowserWindow;
-  tabs: Tab[];
-};
-
-export type WindowGroupedOutput = {
-  type: 'window';
-  stats: TabStats;
-  results: WindowGroupedOutputResult[];
-};
-
-export type ExpressionGroupedOutput = {
-  type: 'expression';
-  stats: TabStats;
-  results: ExpressionGroupedOutputResult[];
-};
-
-export type ExpressionGroupedOutputResult = {
-  displayName: string;
-  rule: Rule;
-  tabs: Tab[];
-};
-
 export type TabGroupOutputResult =
   | WindowGroupedOutputResult
   | DomainGroupedOutputResult
-  | ExpressionGroupedOutputResult;
+  | ExpressionGroupedOutputResult
+  | TabGroupedOutputResult;
 export type TabGroupResult =
   | WindowGroupedOutput
   | DomainGroupedOutput
-  | ExpressionGroupedOutput;
+  | ExpressionGroupedOutput
+  | TabGroupedOutput;
 
 export class TabGrouper {
   activeRules: Rule[] = [];
@@ -119,6 +101,18 @@ export class TabGrouper {
     filters: Filters,
     strategy: T,
   ): Promise<ReturnType<T['buildResult']>> {
+    if (!tabs.length) {
+      return {
+        type: strategy.type,
+        stats: {
+          audible: [],
+          muted: [],
+          duplicates: [],
+        },
+        results: [],
+      } as ReturnType<T['buildResult']>;
+    }
+
     const start = Date.now();
     tabs = this.filterBySearch(tabs, filters.query);
     const stats = this.getStatsUsingRules(tabs, this.activeRules, strategy);
