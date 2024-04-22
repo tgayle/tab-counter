@@ -15,7 +15,18 @@ import {
 } from '../../tabutil';
 import { editingRuleState, getNewRuleFromTab } from '../rules/EditRuleDisplay';
 
-export const TabItem: React.FC<{ tab: Tab }> = ({ tab }) => {
+export enum TabItemActions {
+  SwitchToTab,
+  MoveTabToWindow,
+  ReopenInNormalWindow,
+  CreateRuleFromTab,
+  CloseTab,
+}
+
+export const TabItem: React.FC<{
+  tab: Tab;
+  hiddenOptions?: TabItemActions[];
+}> = ({ tab, hiddenOptions: disabledOptions }) => {
   const currentWindow = useAtomValue(currentWindowAtom);
   const canMoveTabToWindow =
     canTabMoveToWindow(tab, currentWindow) || tab.incognito;
@@ -51,42 +62,52 @@ export const TabItem: React.FC<{ tab: Tab }> = ({ tab }) => {
 
             <ul
               tabIndex={0}
-              className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48"
+              className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-48 z-[1]"
             >
-              <li
-                className={clsx(!canSwitchToTab && 'disabled')}
-                onClick={() => focusTab(tab)}
-              >
-                <a>Switch to tab</a>
-              </li>
-              <li
-                className={clsx(!canMoveTabToWindow && 'disabled')}
-                onClick={() =>
-                  currentWindow && moveTabToWindow(tab, currentWindow)
-                }
-              >
-                <a> Move tab to this window</a>
-              </li>
-              {tab.incognito && (
-                <li onClick={() => reopenIncognitoTab(tab)}>
-                  <a>Reopen in normal window</a>
+              <Show type={TabItemActions.SwitchToTab}>
+                <li
+                  className={clsx(!canSwitchToTab && 'disabled')}
+                  onClick={() => focusTab(tab)}
+                >
+                  <a>Switch to tab</a>
                 </li>
+              </Show>
+              <Show type={TabItemActions.MoveTabToWindow}>
+                <li
+                  className={clsx(!canMoveTabToWindow && 'disabled')}
+                  onClick={() =>
+                    currentWindow && moveTabToWindow(tab, currentWindow)
+                  }
+                >
+                  <a> Move tab to this window</a>
+                </li>
+              </Show>
+              {tab.incognito && (
+                <Show type={TabItemActions.ReopenInNormalWindow}>
+                  <li onClick={() => reopenIncognitoTab(tab)}>
+                    <a>Reopen in normal window</a>
+                  </li>
+                </Show>
               )}
 
-              <li
-                onClick={() => {
-                  setActiveTab(ActiveTab.Tools);
-                  setEditingRuleState({
-                    rule: getNewRuleFromTab(tab),
-                  });
-                }}
-              >
-                <a>Create rule from tab</a>
-              </li>
+              <Show type={TabItemActions.CreateRuleFromTab}>
+                <li
+                  onClick={() => {
+                    setActiveTab(ActiveTab.Tools);
+                    setEditingRuleState({
+                      rule: getNewRuleFromTab(tab),
+                    });
+                  }}
+                >
+                  <a>Create rule from tab</a>
+                </li>
+              </Show>
 
-              <li onClick={() => closeTab(tab)}>
-                <a>Close</a>
-              </li>
+              <Show type={TabItemActions.CloseTab}>
+                <li onClick={() => closeTab(tab)}>
+                  <a>Close</a>
+                </li>
+              </Show>
             </ul>
           </div>
         </div>
@@ -95,9 +116,23 @@ export const TabItem: React.FC<{ tab: Tab }> = ({ tab }) => {
       <div className="flex">
         {tab.audible && <div className="badge badge-success">Audible</div>}
         {tab.mutedInfo?.muted && <div className="badge badge-error">Muted</div>}
-        {tab.incognito && <div className="badge ">Incognito</div>}
+        {tab.incognito && <div className="badge badge-neutral ">Incognito</div>}
         {tab.discarded && <div className="badge badge-info">Suspended</div>}
       </div>
     </div>
   );
+
+  function Show({
+    type,
+    children,
+  }: {
+    type: TabItemActions;
+    children: React.ReactElement;
+  }) {
+    if (disabledOptions?.includes(type)) {
+      return null;
+    }
+
+    return children;
+  }
 };
