@@ -46,6 +46,8 @@ export const TabItem: React.FC<{
           </p>
         </div>
 
+        <div className="grow"></div>
+
         <div className="flex items-center gap-2 ml-1 justify-between">
           <button
             className="p-1 btn-sm btn btn-ghost"
