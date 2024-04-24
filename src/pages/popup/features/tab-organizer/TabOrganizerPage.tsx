@@ -37,7 +37,7 @@ export function TabOrganizerPage({ onBack }: { onBack: () => void }) {
   );
 
   useEffect(() => {
-    setSelectedCaptureGroups(
+    setSelectedCaptureGroups((selectedCaptureGroups) =>
       selectedCaptureGroups.filter(
         (it) => it < expressionResult.captureGroups.length,
       ),
@@ -108,7 +108,7 @@ export function TabOrganizerPage({ onBack }: { onBack: () => void }) {
               ))}
             </div>
 
-            {expressionResult.captureGroups.length > 1 && (
+            {expressionResult.captureGroups.length > 0 && (
               <label className="form-control w-full">
                 <div className="label">
                   <span className="label-text">Generated Tab Group Name</span>
@@ -268,7 +268,16 @@ function generateGroupTemplate(
 
   const { expression } = expressionResult;
 
-  const tabMatch = tab.title.match(expression);
+  const tabMatch = (() => {
+    try {
+      return (
+        tab.title.match(expression) ??
+        tab.url?.toLowerCase().match(expression.toLowerCase())
+      );
+    } catch {
+      return null;
+    }
+  })();
 
   if (!tabMatch) {
     return null;

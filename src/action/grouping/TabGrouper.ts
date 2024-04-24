@@ -1,6 +1,6 @@
 import browser from 'webextension-polyfill';
 import { Tab } from '../../tabutil';
-import { TabFilterType } from '../TabFilter';
+import { TabFilterType, TabSortOrder } from '../TabFilter';
 import { Filters } from '../TabFilterProcessor';
 import { TabStats } from '../TabStats';
 import { defaultRules } from './defaultRules';
@@ -29,7 +29,7 @@ export type Rule = {
   pathname: string | null;
   queryParams: string[];
   useExactPath?: boolean;
-  titleRegex?: string;
+  regex?: string;
 };
 
 type ParsedUri = {
@@ -265,18 +265,21 @@ function getTabKeyFromRule(uri: ParsedUri, rule: Rule) {
 }
 
 export function isRuleApplicableToTab(uri: ParsedUri, rule: Rule): boolean {
-  if (rule.titleRegex) {
+  if (rule.regex) {
     const parsedRegex = (() => {
       try {
-        return new RegExp(rule.titleRegex);
+        return new RegExp(rule.regex);
       } catch (e) {
         return null;
       }
     })();
 
-    if (!parsedRegex || !uri.tab?.title) return false;
+    if (!parsedRegex || !uri.tab) return false;
 
-    return parsedRegex.test(uri.tab.title);
+    return (
+      !!uri.tab.title?.match(parsedRegex) ||
+      !!uri.tab.url?.toLowerCase().match(new RegExp(parsedRegex.source, 'i'))
+    );
   }
 
   if (uri.origin !== rule.origin) return false;
@@ -291,4 +294,19 @@ export function isRuleApplicableToTab(uri: ParsedUri, rule: Rule): boolean {
   }
 
   return true;
+}
+
+export function sortTabs<
+  TabDataType extends { title?: string; url?: string; index?: number },
+>(tabs: TabDataType[], by: TabSortOrder): TabDataType[] {
+  return tabs.sort((a, b) => {
+    const titleA = a.title ?? a.url ?? a.index ?? -1;
+    const titleB = b.title ?? b.url ?? b.index ?? -1;
+    switch (by) {
+      case TabSortOrder.Asc:
+        return titleA < titleB ? -1 : titleA > titleB ? 1 : 0;
+      case TabSortOrder.Desc:
+        return titleA > titleB ? -1 : titleA < titleB ? 1 : 0;
+    }
+  });
 }

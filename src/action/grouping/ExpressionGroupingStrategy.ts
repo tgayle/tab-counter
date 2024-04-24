@@ -23,7 +23,7 @@ export class ExpressionGroupingStrategy extends TabGroupingStrategy<
 > {
   readonly type = 'expression';
   getDiscriminator(tab: Tab, rule: Rule) {
-    return rule.titleRegex ?? '.+';
+    return rule.regex ?? '.+';
   }
 
   getDefaultRule(uri: ParsedUriWithTab): Rule {
@@ -33,16 +33,23 @@ export class ExpressionGroupingStrategy extends TabGroupingStrategy<
       origin: 'expression',
       pathname: null,
       queryParams: [],
-      titleRegex: uri.tab.title ?? uri.tab.url ?? '',
+      regex: uri.tab.title ?? uri.tab.url ?? '',
     };
   }
 
   groupTabs(tabs: Tab[], rules: Rule[]) {
     const groupedValues: Record<string, { tab: Tab }[]> = {};
     const failed: Tab[] = [];
+
     for (const tab of tabs) {
       const matchingRule = rules.find((rule) => {
-        const match = tab.title?.match(rule.titleRegex ?? '');
+        if (!rule.regex) {
+          return false;
+        }
+
+        const match =
+          tab.title?.match(rule.regex) ??
+          tab.url?.match(new RegExp(rule.regex, 'i'));
         return match && match.length > 0;
       });
 
@@ -64,10 +71,10 @@ export class ExpressionGroupingStrategy extends TabGroupingStrategy<
   groupRules(rules: Rule[]): Record<string, Rule[]> {
     const groupedRules: Record<string, Rule[]> = {};
     for (const rule of rules) {
-      if (!groupedRules[rule.titleRegex ?? '']) {
-        groupedRules[rule.titleRegex ?? ''] = [];
+      if (!groupedRules[rule.regex ?? '']) {
+        groupedRules[rule.regex ?? ''] = [];
       }
-      groupedRules[rule.titleRegex ?? ''].push(rule);
+      groupedRules[rule.regex ?? ''].push(rule);
     }
     return groupedRules;
   }
@@ -81,9 +88,7 @@ export class ExpressionGroupingStrategy extends TabGroupingStrategy<
     const ruleToTab = new Map<Rule, { tab: Tab }[]>();
     for (const expression in tabsByExpression) {
       const expressionTabs = tabsByExpression[expression];
-      const expressionRule = rules.find(
-        (rule) => rule.titleRegex === expression,
-      );
+      const expressionRule = rules.find((rule) => rule.regex === expression);
       if (expressionRule) {
         ruleToTab.set(expressionRule, expressionTabs);
       }
@@ -104,7 +109,7 @@ export class ExpressionGroupingStrategy extends TabGroupingStrategy<
       ...tabsByRules.entries(),
     ].map(([rule, tabs]) => {
       return {
-        displayName: rule.displayName ?? rule.titleRegex ?? rule.origin,
+        displayName: rule.displayName ?? rule.regex ?? rule.origin,
         rule,
         tabs: tabs.map((it) => it.tab),
       };

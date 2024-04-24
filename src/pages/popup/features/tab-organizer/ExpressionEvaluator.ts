@@ -35,12 +35,18 @@ export function useEvaluateTabExpression(
   selectedCaptureGroups: number[],
 ): EvaluatedTabExpression {
   const groups = useMemo(() => countExpressionGroups(expression), [expression]);
+  const externalGroupsValue = useMemo(() => groups ?? [], [groups]);
   const { all } = useAtomValue(allTabsAtom);
   const currentWindow = useAtomValue(currentWindowAtom);
 
   const matchedTabs = useMemo(() => {
     return groups !== null
-      ? all.filter((tab) => tab.title && tab.title.match(expression))
+      ? all.filter((tab) => {
+          return (
+            (tab.title && tab.title.match(expression)) ||
+            (tab.url && tab.url.match(expression))
+          );
+        })
       : [];
   }, [expression, all]);
 
@@ -84,7 +90,7 @@ export function useEvaluateTabExpression(
   return {
     expression,
     valid: groups !== null,
-    captureGroups: groups ?? [],
+    captureGroups: externalGroupsValue,
     totalTabs: all.length,
     matchedTabs,
     ...(matches === null
@@ -108,8 +114,6 @@ function countExpressionGroups(
   } catch {
     return null;
   }
-
-  const externallyFriendlyRegex = new RegExp(expression, 'g');
 
   const groupCountMatch = groupCountRegex.exec('');
 
@@ -175,9 +179,11 @@ function generateTabRules(
   const uniqueValuesPerMatchingGroup = new Map<number, Set<string>>();
 
   for (const tab of tabs) {
-    if (!tab.title) continue;
+    if (!tab.title && !tab.url) continue;
 
-    const match = tab.title.match(expression);
+    const match =
+      tab.title?.match(expression) ??
+      tab.url?.toLowerCase().match(expression.toLowerCase());
 
     if (!match) {
       continue;
@@ -236,8 +242,8 @@ function generateTabRules(
       origin: 'https://example.com',
       pathname: null,
       queryParams: [],
-      titleRegex: materializedExpression,
-    };
+      regex: materializedExpression,
+    } satisfies Rule;
   });
 }
 
