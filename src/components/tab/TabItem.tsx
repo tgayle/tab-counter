@@ -3,7 +3,7 @@ import { useAtomValue, useSetAtom } from 'jotai';
 import React from 'react';
 import { MdMoreVert, MdOpenInNew } from 'react-icons/md';
 import { currentWindowAtom } from '../../state/tabs';
-import { selectedTabAtom } from '../../state/ui';
+import { activeToolsTab, selectedTabAtom } from '../../state/ui';
 import { ActiveTab } from '../../store';
 import {
   canTabMoveToWindow,
@@ -14,6 +14,7 @@ import {
   Tab,
 } from '../../tabutil';
 import { editingRuleState, getNewRuleFromTab } from '../rules/EditRuleDisplay';
+import { ToolsTab } from '../../pages/popup/ToolsPane';
 
 export enum TabItemActions {
   SwitchToTab,
@@ -33,6 +34,7 @@ export const TabItem: React.FC<{
   const canSwitchToTab = !(tab.active && tab.windowId === currentWindow?.id);
   const setActiveTab = useSetAtom(selectedTabAtom);
   const setEditingRuleState = useSetAtom(editingRuleState);
+  const setActiveToolsTab = useSetAtom(activeToolsTab);
 
   return (
     <div className="p-2 py-1 flex flex-col items-start gap-1 bg-white">
@@ -96,6 +98,7 @@ export const TabItem: React.FC<{
                 <li
                   onClick={() => {
                     setActiveTab(ActiveTab.Tools);
+                    setActiveToolsTab(ToolsTab.Rules);
                     setEditingRuleState({
                       rule: getNewRuleFromTab(tab),
                     });

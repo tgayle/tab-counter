@@ -1,5 +1,8 @@
 import { atom } from 'jotai';
 import { ActiveTab } from '../store';
+import { ToolsTab } from '../pages/popup/ToolsPane';
+
+export const activeToolsTab = atom<ToolsTab | null>(null);
 
 export const selectedTabAtom = atom(
   ActiveTab.All,

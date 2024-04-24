@@ -3,13 +3,12 @@ import { RulesPage } from './settings/rules/RulesPage';
 import { atom, useAtom } from 'jotai';
 import Features from '../../Features';
 import { TabOrganizerPage } from './features/tab-organizer/TabOrganizerPage';
+import { activeToolsTab } from '../../state/ui';
 
-enum ToolsTab {
+export enum ToolsTab {
   Rules = 'rules',
   Organize = 'organize',
 }
-
-const activeToolsTab = atom<ToolsTab | null>(null);
 
 export function ToolsPane() {
   const [activeTab, setActiveTab] = useAtom(activeToolsTab);
