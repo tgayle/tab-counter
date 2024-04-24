@@ -14,5 +14,5 @@
     "skipLibCheck": true,
     "resolveJsonModule": true
   },
-  "include": ["src/", "vite.config.mts"]
+  "include": ["src/", "vite.config.mts", "global.ts"]
 }

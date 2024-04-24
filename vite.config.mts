@@ -4,6 +4,7 @@ import manifest from './src/manifest';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
+import { BUILD_COMMIT } from './global';
 const isProduction = process.env.NODE_ENV === 'production';
 
 export default defineConfig({
@@ -17,6 +18,11 @@ export default defineConfig({
       },
     },
   },
+
+  define: {
+    'process.env.BUILD_VERSION': JSON.stringify(BUILD_COMMIT),
+  },
+
   plugins: [
     react(),
     crx({ manifest }),

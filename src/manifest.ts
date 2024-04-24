@@ -1,20 +1,13 @@
 import { defineManifest } from '@crxjs/vite-plugin';
-import { spawnSync } from 'child_process';
 import { version } from '../package.json';
-
-const buildHashCmd = spawnSync(
-  'git',
-  'describe --always --dirty --tags'.split(' '),
-);
-const hash = buildHashCmd.stdout.toString().trim();
-
+import { BUILD_COMMIT } from '../global';
 const devMode = process.env.NODE_ENV === 'development';
 
 const manifest = defineManifest({
   name: `Tab Counter${devMode ? ' (Dev)' : ''}`,
   description: `Keeps count of your open tabs and windows`,
   manifest_version: 3,
-  version_name: hash,
+  version_name: BUILD_COMMIT,
   version: version,
   permissions: ['tabs', 'storage', 'contextMenus', 'tabGroups', 'sidePanel'],
   background: {
