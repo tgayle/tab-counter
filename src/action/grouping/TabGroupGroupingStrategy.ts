@@ -27,13 +27,16 @@ export class TabGroupGroupingStrategy extends TabGroupingStrategy<
   }
 
   groupTabs(tabs: Tab[]) {
-    const groupedValues = tabs.reduce((acc, tab) => {
-      tab.groupId ??= -1;
-      const tabs = acc[tab.groupId] || [];
-      tabs.push({ tab });
-      acc[tab.groupId] = tabs;
-      return acc;
-    }, {} as Record<number, { tab: Tab }[]>);
+    const groupedValues = tabs.reduce(
+      (acc, tab) => {
+        tab.groupId ??= -1;
+        const tabs = acc[tab.groupId] || [];
+        tabs.push({ tab });
+        acc[tab.groupId] = tabs;
+        return acc;
+      },
+      {} as Record<number, { tab: Tab }[]>,
+    );
 
     return {
       groupedValues,

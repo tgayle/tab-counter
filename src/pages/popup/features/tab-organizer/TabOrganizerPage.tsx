@@ -142,8 +142,8 @@ export function TabOrganizerPage({ onBack }: { onBack: () => void }) {
             {expressionResult.loading
               ? 'Loading...'
               : expressionResult.matches?.results.length
-              ? `${expressionResult.matches.results.length} groups`
-              : 'No groups'}
+                ? `${expressionResult.matches.results.length} groups`
+                : 'No groups'}
           </p>
         </div>
 

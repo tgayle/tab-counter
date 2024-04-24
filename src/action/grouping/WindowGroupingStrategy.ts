@@ -27,13 +27,16 @@ export class WindowGroupingStrategy extends TabGroupingStrategy<
   }
 
   groupTabs(tabs: Tab[]) {
-    const groupedValues = tabs.reduce((acc, tab) => {
-      tab.windowId ??= -1;
-      const tabs = acc[tab.windowId] || [];
-      tabs.push({ tab });
-      acc[tab.windowId] = tabs;
-      return acc;
-    }, {} as Record<number, { tab: Tab }[]>);
+    const groupedValues = tabs.reduce(
+      (acc, tab) => {
+        tab.windowId ??= -1;
+        const tabs = acc[tab.windowId] || [];
+        tabs.push({ tab });
+        acc[tab.windowId] = tabs;
+        return acc;
+      },
+      {} as Record<number, { tab: Tab }[]>,
+    );
 
     return {
       groupedValues,

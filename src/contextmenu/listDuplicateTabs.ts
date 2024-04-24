@@ -162,8 +162,8 @@ async function createRootMenu({
           a.windowId === activeWindow.id
             ? -1
             : b.windowId === activeWindow.id
-            ? -1
-            : 0,
+              ? -1
+              : 0,
         );
 
         for (const tab of sortedActiveTabs.concat(inactiveTabs)) {

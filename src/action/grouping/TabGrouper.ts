@@ -77,7 +77,10 @@ export type TabGroupResult =
 export class TabGrouper {
   activeRules: Rule[] = [];
 
-  constructor(public windowId: number = -1, overrideRules?: Rule[]) {
+  constructor(
+    public windowId: number = -1,
+    overrideRules?: Rule[],
+  ) {
     if (overrideRules) {
       this.activeRules = overrideRules;
     } else {

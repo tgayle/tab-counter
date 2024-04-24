@@ -102,8 +102,8 @@ export const filteredTabGroups = loadable(
       activeTab === ActiveTab.All
         ? tabs.all
         : activeTab === ActiveTab.Normal
-        ? tabs.normal
-        : tabs.incognito;
+          ? tabs.normal
+          : tabs.incognito;
 
     if (
       filters.grouping.groupBy === GroupTabsByOptions.Domain ||

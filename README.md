@@ -2,9 +2,11 @@
 
 A browser extension for counting and searching your open tabs/windows.
 
-**Why?:** I have a bad habit of not closing tabs, and I thought it would be nice if I could filter these tabs a little better.
+**Why?:** I have a bad habit of not closing tabs, and I thought it would be nice
+if I could filter these tabs a little better.
 
 ### Features:
+
 - [x] Searching Tabs
 - [x] Filtering Tabs
   - [x] Duplicate Tabs
@@ -22,7 +24,6 @@ A browser extension for counting and searching your open tabs/windows.
   - [x] Jump to tab
 - [ ] Firefox Support
 
-
 ### Development
 
 For development with automatic reloading:
@@ -31,6 +32,8 @@ For development with automatic reloading:
 npm run start
 ```
 
-Open the [Extensions Dashboard](chrome://extensions), enable "Developer mode", click "Load unpacked", and choose the `dist` folder.
+Open the [Extensions Dashboard](chrome://extensions), enable "Developer mode",
+click "Load unpacked", and choose the `dist` folder.
 
-When you make changes in `src` the background script and any content script will reload automatically.
+When you make changes in `src` the background script and any content script will
+reload automatically.
