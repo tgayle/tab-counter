@@ -11,8 +11,10 @@ import {
   EvaluatedTabExpression,
   useEvaluateTabExpression,
 } from './ExpressionEvaluator';
-import { Tab, createTabGroup } from '../../../../tabutil';
+import { Tab, closeTab, createTabGroup } from '../../../../tabutil';
 import { ExpressionGroupedOutputResult } from '../../../../action/grouping/ExpressionGroupingStrategy';
+import { tabArchiver } from '../../../../features/archives/TabArchiver';
+import Features from '../../../../Features';
 
 export function TabOrganizerPage({ onBack }: { onBack: () => void }) {
   const [expression, setExpression] = useState('');
@@ -145,7 +147,36 @@ export function TabOrganizerPage({ onBack }: { onBack: () => void }) {
           </p>
         </div>
 
-        <div className="flex justify-end">
+        <div className="flex justify-between">
+          {Features.TAB_ARCHIVING ? (
+            <button
+              className="btn btn-sm btn-secondary"
+              disabled={!expressionResult.matches}
+              onClick={async () => {
+                const allTabs =
+                  expressionResult.matches?.results.flatMap(
+                    (group) => group.tabs,
+                  ) ?? [];
+
+                await tabArchiver.addTab(
+                  ...allTabs
+                    .filter((it) => it.url)
+                    .map((tab) => ({
+                      importedFrom: null,
+                      time: tab.lastAccessed ?? Date.now(),
+                      title: tab.title ?? 'No Title',
+                      url: tab.url!,
+                    })),
+                );
+                await closeTab(...allTabs);
+              }}
+            >
+              Archive All + Close
+            </button>
+          ) : (
+            <div className="grow"></div>
+          )}
+
           <button
             className="btn btn-sm btn-primary"
             disabled={

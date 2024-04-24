@@ -4,6 +4,7 @@ import {
   Rule,
   TabGroupOutputResult,
   TabGroupResult,
+  sortTabs,
 } from './TabGrouper';
 import { Filters } from '../TabFilterProcessor';
 import { GroupSortOrder, TabSortOrder } from '../TabFilter';
@@ -43,18 +44,11 @@ export abstract class TabGroupingStrategy<
     rules: Rule[],
   ): [Map<Rule, TabDataType[]>, Tab[]];
 
-  protected sortTabs(tabs: TabDataType[], by: TabSortOrder): TabDataType[] {
-    return tabs.sort((a, b) => {
-      const titleA = a.tab.title ?? a.tab.url ?? a.tab.index;
-      const titleB = b.tab.title ?? b.tab.url ?? b.tab.index;
-      switch (by) {
-        case TabSortOrder.Asc:
-          return titleA < titleB ? -1 : titleA > titleB ? 1 : 0;
-        case TabSortOrder.Desc:
-          return titleA > titleB ? -1 : titleA < titleB ? 1 : 0;
-      }
-    });
-  }
+  protected sortTabs = (tabs: TabDataType[], orderBy: TabSortOrder) =>
+    sortTabs(
+      tabs.map((it) => it.tab),
+      orderBy,
+    );
 
   protected sortGroups<T extends TabGroupOutputResult>(
     items: T[],

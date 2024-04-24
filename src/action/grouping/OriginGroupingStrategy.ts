@@ -81,7 +81,7 @@ export class OriginGroupingStrategy extends TabGroupingStrategy<
           rule,
           displayName: rule.displayName ?? rule.origin,
           origin: rule.origin,
-          tabs: this.sortTabs(tabs, filters.tabs.sortBy).map((it) => it.tab),
+          tabs: this.sortTabs(tabs, filters.tabs.sortBy),
         };
       },
     );

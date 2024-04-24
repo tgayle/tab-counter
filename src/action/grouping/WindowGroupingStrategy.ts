@@ -78,7 +78,7 @@ export class WindowGroupingStrategy extends TabGroupingStrategy<
           tabs: this.sortTabs(
             tabsByWindow[window.id!] || [],
             filters.tabs.sortBy,
-          ).map((it) => it.tab),
+          ),
         };
       })
       .filter((it) => it.tabs.length);
