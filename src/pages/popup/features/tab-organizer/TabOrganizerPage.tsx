@@ -151,7 +151,7 @@ export function TabOrganizerPage({ onBack }: { onBack: () => void }) {
           {Features.TAB_ARCHIVING ? (
             <button
               className="btn btn-sm btn-secondary"
-              disabled={!expressionResult.matches}
+              disabled={!expressionResult.matches?.results.length}
               onClick={async () => {
                 const allTabs =
                   expressionResult.matches?.results.flatMap(
