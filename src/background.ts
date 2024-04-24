@@ -12,13 +12,15 @@ enum InstallReason {
 }
 
 async function main() {
-  browser.tabs.onUpdated.addListener(async (_, __, tab) => {
-    updateContextMenu(tab);
-  });
+  // browser.tabs.onUpdated.addListener(async (_, __, tab) => {
+  //   updateContextMenu(tab);
+  // });
 
-  browser.tabs.onActivated.addListener(async (info) =>
-    browser.tabs.get(info.tabId).then(updateContextMenu),
-  );
+  // browser.tabs.onActivated.addListener(async (info) =>
+  //   browser.tabs.get(info.tabId).then(updateContextMenu),
+  // );
+  //
+  // getCurrentTab().then((tab) => tab && updateContextMenu(tab));
 
   browser.runtime.onInstalled.addListener(async (details) => {
     if (
@@ -35,7 +37,6 @@ async function main() {
     configureTabArchiving();
   }
 
-  getCurrentTab().then((tab) => tab && updateContextMenu(tab));
   setupBadgeCount();
 }
 

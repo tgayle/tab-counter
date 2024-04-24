@@ -107,17 +107,17 @@ export async function updateTabContextMenu(tab: Tab) {
     .map((it) => it.tabs)
     .flat();
 
-  await createRootMenu({
-    rootId: DUPE_TABS,
-    subitems: similarTabs,
-    title: 'Related Tabs',
-  });
+  // await createRootMenu({
+  //   rootId: DUPE_TABS,
+  //   subitems: similarTabs,
+  //   title: 'Related Tabs',
+  // });
 
-  await createRootMenu({
-    rootId: RELATED_TABS,
-    title: 'Similar Tabs',
-    subitems: relatedTabs,
-  });
+  // await createRootMenu({
+  //   rootId: RELATED_TABS,
+  //   title: 'Similar Tabs',
+  //   subitems: relatedTabs,
+  // });
 }
 
 async function createRootMenu({
