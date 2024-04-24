@@ -34,6 +34,8 @@ import {
 } from '../../state/ui';
 import { DeduplicateTabButton } from '../../components/DeduplicateTabsButton';
 import { IncognitoTabOptions } from '../../components/IncognitoTabOptions';
+import { ArchivedTabsPane } from '../../features/archives/ArchivedTabsPane';
+import { ArchivedTabDropZone } from '../../features/archives/ArchivedTabDropZone';
 
 export const PopupPane = ({ sidePanel }: { sidePanel?: boolean }) => {
   const [selectedTab, setSelectedTab] = useAtom(selectedTabAtom);
@@ -48,6 +50,7 @@ export const PopupPane = ({ sidePanel }: { sidePanel?: boolean }) => {
     | [type: ActiveTab, name: ReactNode, count: number]
     | null
   )[] = [
+    [ActiveTab.Archived, 'Archived', 0],
     [ActiveTab.All, 'All', allTabs.length],
     normalTabs.length && incogTabs.length
       ? [ActiveTab.Normal, 'Normal', normalTabs.length]
@@ -67,7 +70,7 @@ export const PopupPane = ({ sidePanel }: { sidePanel?: boolean }) => {
   }, [selectedTab, normalTabs.length, incogTabs.length]);
 
   return (
-    <div className="w-full max-w-full h-screen max-h-screen flex flex-col">
+    <div className="w-full max-w-full h-screen max-h-screen flex flex-col relative">
       <TabFilterRow
         tabTitles={tabTitles}
         selectedTab={selectedTab}
@@ -77,6 +80,8 @@ export const PopupPane = ({ sidePanel }: { sidePanel?: boolean }) => {
       <main className=" overflow-y-auto flex flex-col flex-grow ">
         {selectedTab === ActiveTab.Tools ? <ToolsPane /> : <OpenTabGroup />}
       </main>
+
+      {sidePanel && <ArchivedTabDropZone />}
     </div>
   );
 };
@@ -124,6 +129,7 @@ const TabGroupItems = () => {
   const toggleSection = useSetAtom(toggleSectionExpansion);
   const groupAtom = useAtomValue(filteredTabGroups);
   const currentWindow = useCurrentWindow();
+  const activeTab = useAtomValue(selectedTabAtom);
 
   const lastValue = useRef(
     groupAtom.state === 'hasData' ? groupAtom.data : null,
@@ -138,69 +144,87 @@ const TabGroupItems = () => {
   const groups =
     groupAtom.state === 'hasData' ? groupAtom.data : lastValue.current;
 
+  if (activeTab === ActiveTab.Archived) {
+    return <ArchivedTabsPane />;
+  }
+
   if (!groups || !currentWindow) {
     return null;
   }
 
-  return (
-    <>
-      {groups.type === 'domain'
-        ? groups.results.map(({ tabs, origin, rule, displayName }, index) => (
-            <GroupAccordionItem
-              title={displayName ?? origin}
-              tabs={tabs}
-              key={rule?.id}
-              open={expandedSections.has(rule?.id ?? index)}
-              onOpen={() => toggleSection(rule?.id ?? index)}
-              removeGroupText="Close All"
-              onRemoveGroup={() => closeTab(...tabs)}
-              mergeGroupText="Move all tabs here"
-              onMergeGroup={
-                canTabMoveToWindow(tabs[0], currentWindow)
-                  ? async () => {
-                      moveTabToWindow(tabs, currentWindow);
-                    }
-                  : undefined
-              }
-            />
-          ))
-        : groups.type === 'window'
-        ? groups.results.map(({ window, tabs }, index) => (
-            <GroupAccordionItem
-              title={tabs.find((it) => it.active)?.title ?? `#${window.id}`}
-              tabs={tabs}
-              key={window.id}
-              open={expandedSections.has(window.id ?? index)}
-              onOpen={() => toggleSection(window.id ?? index)}
-              onRemoveGroup={() => closeWindow(window)}
-              removeGroupText="Close Window"
-              mergeGroupText="Move all tabs here"
-              onMergeGroup={
-                canTabMoveToWindow(tabs[0], currentWindow)
-                  ? async () => {
-                      moveTabToWindow(tabs, currentWindow);
-                    }
-                  : undefined
-              }
-            />
-          ))
-        : groups.type === 'tab_group'
-        ? groups.results.map(({ tabs, tabGroup: group, displayName }) => (
-            <GroupAccordionItem
-              title={displayName || group.title || tabs[0]?.title || 'Unkown'}
-              tabs={tabs}
-              key={group.id}
-              open={expandedSections.has(group.id)}
-              onOpen={() => toggleSection(group.id)}
-              onRemoveGroup={() => closeTab(...tabs)}
-              removeGroupText="Close Group"
-              mergeGroupText="Move all tabs here"
-              alwaysShowGroup
-            />
-          ))
-        : `how did you get here? (grouping=${JSON.stringify(groups)})`}
-    </>
-  );
+  if (groups.type === 'domain') {
+    return (
+      <>
+        {groups.results.map(({ tabs, origin, rule, displayName }, index) => (
+          <GroupAccordionItem
+            title={displayName ?? origin}
+            tabs={tabs}
+            key={rule?.id ?? origin}
+            open={expandedSections.has(rule?.id ?? index)}
+            onOpen={() => toggleSection(rule?.id ?? index)}
+            removeGroupText="Close All"
+            onRemoveGroup={() => closeTab(...tabs)}
+            mergeGroupText="Move all tabs here"
+            onMergeGroup={
+              canTabMoveToWindow(tabs[0], currentWindow)
+                ? async () => {
+                    moveTabToWindow(tabs, currentWindow);
+                  }
+                : undefined
+            }
+          />
+        ))}
+      </>
+    );
+  }
+
+  if (groups.type === 'window') {
+    return (
+      <>
+        {groups.results.map(({ window, tabs }, index) => (
+          <GroupAccordionItem
+            title={tabs.find((it) => it.active)?.title ?? `#${window.id}`}
+            tabs={tabs}
+            key={window.id}
+            open={expandedSections.has(window.id ?? index)}
+            onOpen={() => toggleSection(window.id ?? index)}
+            onRemoveGroup={() => closeWindow(window)}
+            removeGroupText="Close Window"
+            mergeGroupText="Move all tabs here"
+            onMergeGroup={
+              canTabMoveToWindow(tabs[0], currentWindow)
+                ? async () => {
+                    moveTabToWindow(tabs, currentWindow);
+                  }
+                : undefined
+            }
+          />
+        ))}
+      </>
+    );
+  }
+
+  if (groups.type === 'tab_group') {
+    return (
+      <>
+        {groups.results.map(({ tabs, tabGroup: group, displayName }) => (
+          <GroupAccordionItem
+            title={displayName || group.title || tabs[0]?.title || 'Unkown'}
+            tabs={tabs}
+            key={group.id}
+            open={expandedSections.has(group.id)}
+            onOpen={() => toggleSection(group.id)}
+            onRemoveGroup={() => closeTab(...tabs)}
+            removeGroupText="Close Group"
+            mergeGroupText="Move all tabs here"
+            alwaysShowGroup
+          />
+        ))}
+      </>
+    );
+  }
+
+  return <>how did you get here? (grouping={JSON.stringify(groups)})</>;
 };
 
 function TabFilterRow({
@@ -214,16 +238,16 @@ function TabFilterRow({
 }) {
   const [hasOverflow, setHasOverflow] = useState(false);
 
-  useLayoutEffect(
-    () => {
-      const hasOverflow = Array.from(
-        document.querySelectorAll<HTMLElement>('.tab .tab-tab-count'),
-      ).some((it) => it.clientWidth < it.scrollWidth);
+  useLayoutEffect(() => {
+    const hasOverflow = Array.from(
+      document.querySelectorAll<HTMLElement>('.tab .tab-tab-count'),
+    ).some((it) => {
+      console.log(it.innerText, it.clientWidth, it.scrollWidth);
+      return it.clientWidth < it.scrollWidth;
+    });
 
-      setHasOverflow(hasOverflow);
-    },
-    tabTitles.map((it) => it?.[2]),
-  );
+    setHasOverflow(hasOverflow);
+  }, [selectedTab, ...tabTitles.map((it) => it?.[2])]);
 
   return (
     <div

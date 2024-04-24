@@ -3,6 +3,8 @@ import { TabGrouper } from './action/grouping/TabGrouper';
 import { setupBadgeCount } from './badge';
 import { updateTabContextMenu } from './contextmenu/listDuplicateTabs';
 import { getCurrentTab, Tab } from './tabutil';
+import Features from './Features';
+import { configureTabArchiving } from './features/archives';
 
 enum InstallReason {
   INSTALL = 'install',
@@ -28,6 +30,10 @@ async function main() {
       new TabGrouper().restoreDefaultRules();
     }
   });
+
+  if (Features.TAB_ARCHIVING) {
+    configureTabArchiving();
+  }
 
   getCurrentTab().then((tab) => tab && updateContextMenu(tab));
   setupBadgeCount();

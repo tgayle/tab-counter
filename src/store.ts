@@ -3,4 +3,5 @@ export enum ActiveTab {
   Normal,
   Incog,
   Tools,
+  Archived,
 }
