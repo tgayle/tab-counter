@@ -89,7 +89,7 @@ export class WindowGroupingStrategy extends TabGroupingStrategy<
     return {
       type: 'window',
       stats,
-      results: groups,
+      results: this.sortGroups(groups, filters.grouping.sortBy),
     };
   }
 }
