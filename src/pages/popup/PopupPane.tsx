@@ -35,7 +35,7 @@ import {
 import { DeduplicateTabButton } from '../../components/DeduplicateTabsButton';
 import { IncognitoTabOptions } from '../../components/IncognitoTabOptions';
 
-export const PopupPane = () => {
+export const PopupPane = ({ sidePanel }: { sidePanel?: boolean }) => {
   const [selectedTab, setSelectedTab] = useAtom(selectedTabAtom);
 
   const {

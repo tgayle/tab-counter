@@ -16,10 +16,13 @@ const manifest = defineManifest({
   manifest_version: 3,
   version_name: hash,
   version: version,
-  permissions: ['tabs', 'storage', 'contextMenus', 'tabGroups'],
+  permissions: ['tabs', 'storage', 'contextMenus', 'tabGroups', 'sidePanel'],
   background: {
     service_worker: 'src/background.ts',
     type: 'module',
+  },
+  side_panel: {
+    default_path: 'src/pages/sidePanel/index.html',
   },
   action: {
     default_popup: 'src/pages/popup/index.html',
