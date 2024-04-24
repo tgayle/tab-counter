@@ -159,9 +159,8 @@ export async function reopenIncognitoTab(...tabs: Tab[]): Promise<void> {
 }
 
 export async function closeTab(...tabs: (Tab | number)[]): Promise<void> {
-  await browser.tabs.remove(
-    tabs.map((tab) => (typeof tab === 'number' ? tab : tab.id ?? -1)),
-  );
+  const ids = tabs.map((tab) => (typeof tab === 'number' ? tab : tab.id ?? -1));
+  await browser.tabs.remove(Array.from(new Set(ids)));
 }
 
 export async function closeWindow(window: BrowserWindow): Promise<void> {
