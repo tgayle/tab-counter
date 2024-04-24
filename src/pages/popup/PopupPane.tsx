@@ -276,6 +276,7 @@ function TabFilterRow({
           >
             {displayText}{' '}
             {type !== ActiveTab.Tools &&
+            count > 0 &&
             (!hasOverflow || selectedTab === type) ? (
               <span className="min-w-0 tab-tab-count">({count})</span>
             ) : (
