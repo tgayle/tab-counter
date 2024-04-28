@@ -36,6 +36,7 @@ import { DeduplicateTabButton } from '../../components/DeduplicateTabsButton';
 import { IncognitoTabOptions } from '../../components/IncognitoTabOptions';
 import { ArchivedTabsPane } from '../../features/archives/ArchivedTabsPane';
 import { ArchivedTabDropZone } from '../../features/archives/ArchivedTabDropZone';
+import Features from '../../Features';
 
 export const PopupPane = ({ sidePanel }: { sidePanel?: boolean }) => {
   const [selectedTab, setSelectedTab] = useAtom(selectedTabAtom);
@@ -47,10 +48,12 @@ export const PopupPane = ({ sidePanel }: { sidePanel?: boolean }) => {
   } = useAtomValue(allTabsAtom);
 
   const tabTitles: (
-    | [type: ActiveTab, name: ReactNode, count: number]
+    | readonly [type: ActiveTab, name: ReactNode, count: number]
     | null
   )[] = [
-    [ActiveTab.Archived, 'Archived', 0],
+    Features.TAB_ARCHIVING
+      ? ([ActiveTab.Archived, 'Archived', 0] as const)
+      : null,
     [ActiveTab.All, 'All', allTabs.length],
     normalTabs.length && incogTabs.length
       ? [ActiveTab.Normal, 'Normal', normalTabs.length]
@@ -232,7 +235,10 @@ function TabFilterRow({
   setSelectedTab,
   tabTitles,
 }: {
-  tabTitles: ([type: ActiveTab, name: ReactNode, count: number] | null)[];
+  tabTitles: (
+    | readonly [type: ActiveTab, name: ReactNode, count: number]
+    | null
+  )[];
   selectedTab: ActiveTab;
   setSelectedTab: (update: ActiveTab) => void;
 }) {
