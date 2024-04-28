@@ -20,7 +20,7 @@ export default defineConfig({
   },
 
   define: {
-    'process.env.BUILD_VERSION': JSON.stringify(BUILD_COMMIT),
+    'process.env.BUILD_COMMIT': JSON.stringify(BUILD_COMMIT),
   },
 
   plugins: [
