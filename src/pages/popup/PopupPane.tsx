@@ -47,10 +47,7 @@ export const PopupPane = ({ sidePanel }: { sidePanel?: boolean }) => {
     normal: normalTabs,
   } = useAtomValue(allTabsAtom);
 
-  const tabTitles: (
-    | readonly [type: ActiveTab, name: ReactNode, count: number]
-    | null
-  )[] = [
+  const tabTitles: (TabDescription | null)[] = [
     Features.TAB_ARCHIVING
       ? ([ActiveTab.Archived, 'Archived', 0] as const)
       : null,
@@ -59,7 +56,6 @@ export const PopupPane = ({ sidePanel }: { sidePanel?: boolean }) => {
       ? [ActiveTab.Normal, 'Normal', normalTabs.length]
       : null,
     incogTabs.length ? [ActiveTab.Incog, 'Incognito', incogTabs.length] : null,
-    [ActiveTab.Tools, <MdBuild size={16} key="settings_icon" />, 0],
   ];
 
   useEffect(() => {
@@ -230,69 +226,99 @@ const TabGroupItems = () => {
   return <>how did you get here? (grouping={JSON.stringify(groups)})</>;
 };
 
+type TabDescription = readonly [
+  type: ActiveTab,
+  name: ReactNode,
+  count: number,
+];
 function TabFilterRow({
   selectedTab,
   setSelectedTab,
   tabTitles,
 }: {
-  tabTitles: (
-    | readonly [type: ActiveTab, name: ReactNode, count: number]
-    | null
-  )[];
+  tabTitles: (TabDescription | null)[];
   selectedTab: ActiveTab;
   setSelectedTab: (update: ActiveTab) => void;
 }) {
-  const [hasOverflow, setHasOverflow] = useState(false);
-
-  useLayoutEffect(() => {
-    const hasOverflow = Array.from(
-      document.querySelectorAll<HTMLElement>('.tab .tab-tab-count'),
-    ).some((it) => {
-      console.log(it.innerText, it.clientWidth, it.scrollWidth);
-      return it.clientWidth < it.scrollWidth;
-    });
-
-    setHasOverflow(hasOverflow);
-  }, [selectedTab, ...tabTitles.map((it) => it?.[2])]);
-
   return (
-    <div
-      className="tabs max-w-full tabs-bordered w-full wrap sticky top-0 bg-white z-20"
-      style={{
-        gridTemplateColumns: `repeat(${
-          tabTitles.filter(Boolean).length
-        }, minmax(0, 1fr))`,
-      }}
-    >
-      {tabTitles.map((title) => {
-        if (!title) {
-          return null;
-        }
+    <div className="max-w-full sticky top-0 bg-white z-20 grid overflow-x-clip h-min ">
+      <div className="tabs max-w-full tabs-bordered  w-full overflow-x-auto relative bg-base-100 transition-colors duration-300">
+        {tabTitles.map((title, i) => {
+          if (!title) {
+            return null;
+          }
 
-        const [type, displayText, count] = title;
+          const [type] = title;
+          return (
+            <Tab
+              tab={title}
+              key={type}
+              style={{
+                borderBottomColor:
+                  type === selectedTab ? 'oklch(var(--n))' : undefined,
+              }}
+              className={clsx(
+                'border-primary',
+                i === tabTitles.length - 1 && 'pr-14',
+              )}
+            />
+          );
+        })}
+      </div>
 
-        return (
-          <button
-            key={type}
-            className={clsx(
-              'tab px-3 whitespace-pre flex-nowrap max-w-full ',
-              selectedTab === type && 'tab-active col-span-2',
-            )}
-            onClick={() => setSelectedTab(type)}
-          >
-            {displayText}{' '}
-            {type !== ActiveTab.Tools &&
-            count > 0 &&
-            (!hasOverflow || selectedTab === type) ? (
-              <span className="min-w-0 tab-tab-count">({count})</span>
-            ) : (
-              ''
-            )}
-          </button>
-        );
-      })}
+      <button
+        className={clsx(
+          'absolute right-0 rounded-l-full px-4 btn btn-sm btn-neutral transition-colors duration-300 no-animation outline-none',
+          selectedTab === ActiveTab.Tools ? 'btn-active' : 'bg-base-100',
+        )}
+        style={{
+          boxShadow: '-4px 0px 5px 0px oklch(var(--b3))',
+        }}
+        onClick={() => setSelectedTab(ActiveTab.Tools)}
+      >
+        <MdBuild
+          size={16}
+          key="settings_icon"
+          className={clsx(
+            'h-8',
+            selectedTab === ActiveTab.Tools
+              ? 'text-base-100'
+              : 'text-base-content',
+          )}
+        />
+      </button>
     </div>
   );
+
+  function Tab({
+    tab: [type, displayText, count],
+    className,
+    style,
+  }: {
+    tab: TabDescription;
+    style?: React.CSSProperties;
+    className?: string;
+  }) {
+    return (
+      <button
+        key={type}
+        className={clsx(
+          'tab px-3 whitespace-pre flex-nowrap max-w-full ',
+          selectedTab === type && 'tab-active col-span-2',
+          className,
+        )}
+        onClick={() => setSelectedTab(type)}
+        style={style}
+      >
+        {displayText}{' '}
+        {type !== ActiveTab.Tools && count > 0 ? (
+          <span className="min-w-0 tab-tab-count">({count})</span>
+        ) : (
+          ''
+        )}
+      </button>
+    );
+  }
 }
 
 function useCurrentWindow() {
