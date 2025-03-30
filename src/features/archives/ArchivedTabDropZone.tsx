@@ -38,6 +38,7 @@ export function ArchivedTabDropZone() {
             time: Date.now(),
             title: url.href,
             url: url.href,
+            archiveCount: 1,
           });
         }
       })();

@@ -32,6 +32,7 @@ export async function configureTabArchiving() {
           time: Date.now(),
           title: info.linkUrl,
           url: info.linkUrl,
+          archiveCount: 1,
         });
         return;
       case 'archive-tab':
@@ -39,13 +40,7 @@ export async function configureTabArchiving() {
 
         if (!tab || !tab.url || !tab.id) return;
 
-        await archiver.addTab({
-          importedFrom: null,
-          time: Date.now(),
-          title: tab?.title ?? 'Unknown',
-          url: tab?.url ?? 'about:blank',
-        });
-
+        await archiver.importTab(tab);
         await closeTab(tab.id);
         return;
     }

@@ -158,16 +158,7 @@ export function TabOrganizerPage({ onBack }: { onBack: () => void }) {
                     (group) => group.tabs,
                   ) ?? [];
 
-                await tabArchiver.addTab(
-                  ...allTabs
-                    .filter((it) => it.url)
-                    .map((tab) => ({
-                      importedFrom: null,
-                      time: tab.lastAccessed ?? Date.now(),
-                      title: tab.title ?? 'No Title',
-                      url: tab.url!,
-                    })),
-                );
+                await tabArchiver.importTab(...allTabs.filter((it) => it.url));
                 await closeTab(...allTabs);
               }}
             >
