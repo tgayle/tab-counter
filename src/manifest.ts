@@ -14,7 +14,7 @@ const manifest = defineManifest({
   name: `Tab Counter${inDev ? ' (Dev)' : ''}`,
   description: `Keeps count of your open tabs and windows`,
   manifest_version: 3,
-  version_name: BUILD_COMMIT,
+  version_name: `${version} (${BUILD_COMMIT})`,
   version: version,
   permissions: [
     'tabs',
