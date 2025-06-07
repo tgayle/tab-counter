@@ -1,10 +1,10 @@
 import { defineManifest } from '@crxjs/vite-plugin';
 import { version } from '../package.json';
 import { BUILD_COMMIT } from '../global';
-const devMode = process.env.NODE_ENV === 'development';
+import { inDev } from './Features';
 
 const manifest = defineManifest({
-  name: `Tab Counter${devMode ? ' (Dev)' : ''}`,
+  name: `Tab Counter${inDev ? ' (Dev)' : ''}`,
   description: `Keeps count of your open tabs and windows`,
   manifest_version: 3,
   version_name: BUILD_COMMIT,
@@ -27,7 +27,7 @@ const manifest = defineManifest({
       },
     },
   },
-  icons: !devMode // Hide icon in dev mode for distinction.
+  icons: !inDev // Hide icon in dev mode for distinction.
     ? {
         16: 'icons/16.png',
         48: 'icons/48.png',
