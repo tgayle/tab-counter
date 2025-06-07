@@ -1,7 +1,14 @@
 import { defineManifest } from '@crxjs/vite-plugin';
 import { version } from '../package.json';
 import { BUILD_COMMIT } from '../global';
-import { inDev } from './Features';
+import Features, { inDev } from './Features';
+
+const conditionalFeature = (
+  feature: string,
+  featureFlag: boolean | undefined,
+): string[] => {
+  return featureFlag ? [feature] : [];
+};
 
 const manifest = defineManifest({
   name: `Tab Counter${inDev ? ' (Dev)' : ''}`,
@@ -9,7 +16,13 @@ const manifest = defineManifest({
   manifest_version: 3,
   version_name: BUILD_COMMIT,
   version: version,
-  permissions: ['tabs', 'storage', 'contextMenus', 'tabGroups', 'sidePanel'],
+  permissions: [
+    'tabs',
+    'storage',
+    'contextMenus',
+    ...conditionalFeature('tabGroups', Features.TAB_GROUPING),
+    'sidePanel',
+  ],
   background: {
     service_worker: 'src/background.ts',
     type: 'module',
