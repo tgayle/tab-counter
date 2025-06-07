@@ -22,11 +22,11 @@ export type DomainGroupedOutput = {
 };
 
 export class OriginGroupingStrategy extends TabGroupingStrategy<
-  'origin',
+  'domain',
   string,
   DomainGroupedOutput
 > {
-  readonly type = 'origin';
+  readonly type = 'domain';
   getDiscriminator(tab: Tab, rule: Rule) {
     return rule.origin;
   }
