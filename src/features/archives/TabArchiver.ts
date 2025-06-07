@@ -1,5 +1,5 @@
 import { EventEmitter, ExternalEventEmitter } from '../../base/EventEmitter';
-import { Tab } from '../../tabutil';
+import { Tab, debounce } from '../../tabutil';
 
 export type ArchivedTab = {
   title: string;
@@ -212,23 +212,3 @@ export class TabArchiver {
 }
 
 export const tabArchiver = new TabArchiver();
-
-function debounce<T extends (...args: any[]) => any>(
-  name: string,
-  fn: T,
-  delay: number,
-) {
-  let timeout: number | NodeJS.Timeout | undefined;
-
-  return () => {
-    if (timeout) {
-      console.log('Clearing timeout', name);
-      clearTimeout(timeout as number);
-    }
-
-    timeout = setTimeout(() => {
-      timeout = undefined;
-      fn();
-    }, delay);
-  };
-}

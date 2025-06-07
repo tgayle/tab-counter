@@ -23,7 +23,7 @@
     "webextension-polyfill": "^0.10.0"
   },
   "devDependencies": {
-    "@crxjs/vite-plugin": "^2.0.0-beta.23",
+    "@crxjs/vite-plugin": "^2.0.0-beta.33",
     "@types/chrome": "~0.0.181",
     "@types/eslint": "^7.29.0",
     "@types/jest": "^26.0.19",
@@ -47,6 +47,6 @@
     "ts-jest": "^29.0.0",
     "tslib": "^2.0.3",
     "typescript": "^5.4.5",
-    "vite": "^3.1.17"
+    "vite": "^3.2.11"
   }
 }

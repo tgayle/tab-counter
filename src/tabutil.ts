@@ -17,14 +17,18 @@ export type TabInfo = {
 };
 
 export async function getTabInfo(): Promise<TabInfo> {
+  const start = Date.now();
+  const key = `getTabInfo ${start}`;
+  console.time(key);
   const tabs = await browser.tabs.query({});
-  const incognitoTabs = tabs.filter((tab) => tab.incognito);
-  const normalTabs = tabs.filter((tab) => !tab.incognito);
+
+  const [normalTabs, incognitoTabs] = partition(tabs, (tab) => !tab.incognito);
 
   const text = `${normalTabs.length}${
     incognitoTabs.length ? '/' + incognitoTabs.length : ''
   }`;
 
+  console.timeEnd(key);
   return {
     text,
     count: {
@@ -216,4 +220,24 @@ export function partition<T>(
     }
   }
   return [trueItems, falseItems];
+}
+
+export function debounce<T extends (...args: any[]) => any>(
+  name: string,
+  fn: T,
+  delay: number,
+) {
+  let timeout: number | NodeJS.Timeout | undefined;
+
+  return () => {
+    if (timeout) {
+      console.log('debounced:', name);
+      clearTimeout(timeout as number);
+    }
+
+    timeout = setTimeout(() => {
+      timeout = undefined;
+      fn();
+    }, delay);
+  };
 }
