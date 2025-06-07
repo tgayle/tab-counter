@@ -13,6 +13,7 @@ import {
   tabFilterAtom,
 } from '../../state/settings';
 import { filteredTabGroups, searchVisibleAtom } from '../../state/tabs';
+import Features from '../../Features';
 
 export function TabFilterSection() {
   const [searchVisible, toggleSearchVisible] = useAtom(searchVisibleAtom);
@@ -114,8 +115,14 @@ const SortOrderOptions = [
 const GroupByOptions = [
   { label: 'Domain', value: GroupTabsByOptions.Domain },
   { label: 'Window', value: GroupTabsByOptions.Window },
-  { label: 'Tab Groups', value: GroupTabsByOptions.TabGroups },
 ];
+
+if (Features.TAB_GROUPING) {
+  GroupByOptions.push({
+    label: 'Tab Groups',
+    value: GroupTabsByOptions.TabGroups,
+  });
+}
 
 function FilterDropdown({
   groupBy,
