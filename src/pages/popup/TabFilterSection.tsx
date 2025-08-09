@@ -36,12 +36,12 @@ export function TabFilterSection() {
         <StatsOptions />
       </select>
 
-      <div
+      <button
         className="p-1 btn btn-ghost btn-sm btn-outline border-gray-300"
         onClick={() => toggleSearchVisible(!searchVisible)}
       >
         <MdSearch aria-label="Search tabs" className="p-1" size={24} />
-      </div>
+      </button>
 
       <FilterDropdown
         groupBy={filters.grouping.groupBy}
