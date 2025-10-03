@@ -37,13 +37,16 @@ export const TabItem: React.FC<{
   const setActiveToolsTab = useSetAtom(activeToolsTab);
 
   return (
-    <div className="p-2 py-1 flex flex-col items-start gap-1 bg-white">
+    <div
+      className="p-2 py-1 flex flex-col items-start gap-1 bg-white"
+      data-testid="tab-item"
+    >
       <div className="flex w-full items-center">
         <div className="grow max-w-[80%] overflow-clip">
-          <p className="truncate" title={tab.title}>
+          <p className="truncate" title={tab.title} data-testid="tab-title">
             {tab.title}
           </p>
-          <p className="truncate" title={tab.url}>
+          <p className="truncate" title={tab.url} data-testid="tab-url">
             {tab.url}
           </p>
         </div>
@@ -55,12 +58,19 @@ export const TabItem: React.FC<{
             className="p-1 btn-sm btn btn-ghost"
             disabled={!canSwitchToTab}
             onClick={() => focusTab(tab)}
+            title="Switch to tab"
+            data-testid="switch-to-tab-btn"
           >
             <MdOpenInNew size={20} />
           </button>
 
           <div className="dropdown dropdown-end">
-            <button className="p-1 btn btn-ghost btn-sm" tabIndex={0}>
+            <button
+              className="p-1 btn btn-ghost btn-sm"
+              tabIndex={0}
+              data-testid="tab-item-menu-btn"
+              title="More options"
+            >
               <MdMoreVert size={20} />
             </button>
 

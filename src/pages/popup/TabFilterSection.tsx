@@ -32,6 +32,7 @@ export function TabFilterSection() {
             setTabFilterType(e.target.value as TabFilterType);
           }
         }}
+        data-testid="tab-filter-select"
       >
         <StatsOptions />
       </select>
@@ -39,6 +40,7 @@ export function TabFilterSection() {
       <button
         className="p-1 btn btn-ghost btn-sm btn-outline border-gray-300"
         onClick={() => toggleSearchVisible(!searchVisible)}
+        data-testid="toggle-search"
       >
         <MdSearch aria-label="Search tabs" className="p-1" size={24} />
       </button>

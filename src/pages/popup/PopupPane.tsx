@@ -109,6 +109,7 @@ const OpenTabGroup = () => {
             value={searchQuery}
             autoFocus
             onChange={(e) => setSearchQuery(e.target.value)}
+            data-testid="tab-search-input"
           />
         )}
       </div>
@@ -309,10 +310,17 @@ function TabFilterRow({
         )}
         onClick={() => setSelectedTab(type)}
         style={style}
+        data-testid="tabs-tab"
+        aria-label={`${displayText} tabs`}
       >
         {displayText}{' '}
         {type !== ActiveTab.Tools && count > 0 ? (
-          <span className="min-w-0 tab-tab-count">({count})</span>
+          <span
+            className="min-w-0 tab-tab-count"
+            data-testid="tab-count-number"
+          >
+            ({count})
+          </span>
         ) : (
           ''
         )}
