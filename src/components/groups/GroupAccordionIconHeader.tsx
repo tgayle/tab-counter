@@ -37,7 +37,7 @@ export function GroupAccordionIconHeader({
       </span>
 
       <span className="flex items-center gap-2 pl-2">
-        <span>({tabs.length})</span>
+        <span data-testid="group-tab-count">({tabs.length})</span>
         <MdChevronLeft
           size={24}
           className={

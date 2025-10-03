@@ -46,7 +46,13 @@ export const GroupAccordionItem = ({
   const singleItemMode = tabs.length === 1 && !alwaysShowGroup;
 
   return (
-    <div>
+    <div
+      {...(singleItemMode
+        ? {}
+        : {
+            'data-testid': 'tab-group-item',
+          })}
+    >
       {!singleItemMode && (
         <GroupAccordionIconHeader
           onOpen={onOpen}

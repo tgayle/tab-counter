@@ -2,6 +2,7 @@ import { crx } from '@crxjs/vite-plugin';
 import zip from 'rollup-plugin-zip';
 import manifest from './src/manifest';
 import react from '@vitejs/plugin-react';
+import istanbul from 'vite-plugin-istanbul';
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
 import { BUILD_COMMIT } from './global';
@@ -24,6 +25,13 @@ export default defineConfig({
   },
 
   plugins: [
+    istanbul({
+      include: 'src/*',
+      exclude: ['node_modules', 'tests'],
+      extension: ['.js', '.ts', '.tsx'],
+      checkProd: true,
+      requireEnv: false,
+    }),
     react(),
     crx({ manifest }),
     isProduction && zip({ dir: 'releases' }),

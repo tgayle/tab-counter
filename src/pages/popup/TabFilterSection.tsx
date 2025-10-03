@@ -138,10 +138,11 @@ function FilterDropdown({
   onChangeGroupBy: (groupBy: GroupTabsByOptions) => void;
 }) {
   return (
-    <div className="dropdown dropdown-end">
+    <div className="dropdown dropdown-end" data-testid="tab-filter-menu">
       <div
         tabIndex={0}
         className="p-1 btn btn-ghost btn-sm btn-outline border-gray-300"
+        data-testid="tab-filter-menu-btn"
       >
         <MdSort size={24} />
       </div>
