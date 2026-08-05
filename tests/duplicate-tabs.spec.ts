@@ -1,6 +1,7 @@
-import { test } from './main.spec';
+import { test } from './base';
 import { expect } from '@playwright/test';
 import { TabFilterType } from '../src/action/TabFilter';
+
 test('duplicate tabs are listed', async ({ extension }) => {
   await extension.filterSelectDropdown.selectOption(TabFilterType.Duplicates);
 

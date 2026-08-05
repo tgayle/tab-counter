@@ -1,5 +1,6 @@
-import { test } from './main.spec';
+import { test } from './base';
 import { expect } from '@playwright/test';
+
 test('search by URL works', async ({ extension }) => {
   await extension.openTabs('https://example.com', 'https://example.org');
   await expect(extension.tabItems).toHaveCount(4);

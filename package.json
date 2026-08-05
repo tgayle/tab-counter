@@ -4,6 +4,7 @@
   "private": true,
   "description": "Counts your open tabs.",
   "author": "tgayle",
+  "homepage": "https://github.com/tgayle/tab-counter",
   "scripts": {
     "build": "vite build",
     "start": "vite",

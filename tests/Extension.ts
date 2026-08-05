@@ -73,6 +73,10 @@ export class ExtensionPage {
 class TabGroup {
   constructor(readonly root: Locator) {}
 
+  get title() {
+    return this.root.locator('[title]').first();
+  }
+
   get tabCount() {
     return this.root.getByTestId('group-tab-count');
   }

@@ -181,9 +181,9 @@ const TabGroupItems = () => {
   if (groups.type === 'window') {
     return (
       <>
-        {groups.results.map(({ window, tabs }, index) => (
+        {groups.results.map(({ window, tabs, displayName }, index) => (
           <GroupAccordionItem
-            title={tabs.find((it) => it.active)?.title ?? `#${window.id}`}
+            title={displayName}
             tabs={tabs}
             key={window.id}
             open={expandedSections.has(window.id ?? index)}

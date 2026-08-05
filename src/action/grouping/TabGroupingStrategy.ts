@@ -61,6 +61,7 @@ export abstract class TabGroupingStrategy<
     rules: Rule[],
     filters: Filters,
     stats: TabStats,
+    allTabs?: Tab[],
   ): Promise<GroupDataType>;
 
   /**

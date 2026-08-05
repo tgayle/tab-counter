@@ -68,16 +68,21 @@ export class WindowGroupingStrategy extends TabGroupingStrategy<
     rules: Rule[],
     filters: Filters,
     stats: TabStats,
+    allTabs = tabs,
   ): Promise<WindowGroupedOutput> {
     const windows = await getAllWindows();
 
     const { groupedValues: tabsByWindow } = this.groupTabs(tabs);
+    const { groupedValues: allTabsByWindow } = this.groupTabs(allTabs);
 
     const groups = windows
       .map((window): WindowGroupedOutputResult => {
+        const windowTabs = allTabsByWindow[window.id!] || [];
+        const activeTab = windowTabs.find((it) => it.tab.active)?.tab;
+
         return {
           window,
-          displayName: `Window ${window.id}`,
+          displayName: activeTab?.title ?? `Window ${window.id}`,
           tabs: this.sortTabs(
             tabsByWindow[window.id!] || [],
             filters.tabs.sortBy,

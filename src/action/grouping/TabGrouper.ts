@@ -117,6 +117,7 @@ export class TabGrouper {
     }
 
     const start = Date.now();
+    const allTabs = tabs;
     tabs = this.filterBySearch(tabs, filters.query);
     const stats = this.getStatsUsingRules(tabs, this.activeRules, strategy);
 
@@ -125,6 +126,7 @@ export class TabGrouper {
       this.activeRules,
       filters,
       stats,
+      allTabs,
     );
 
     console.log(
