@@ -13,7 +13,7 @@ test('duplicate tabs are listed', async ({ extension }) => {
     'https://example.org',
   );
 
-  await extension.tabGroupItems.click();
+  await extension.tabGroupItems.first().click();
 
   await expect(extension.tabItems).toHaveCount(2, { timeout: 1000 });
   await expect(extension.tabItems.nth(0)).toHaveText(/example\.com/);
