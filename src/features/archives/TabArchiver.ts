@@ -202,7 +202,8 @@ export class TabArchiver {
 
       const change = changes[ARCHIVE_KEY];
       console.log('Archived tabs changed:', change);
-      const newValue: PersistedArchives = change.newValue || { tabs: [] };
+      const newValue: PersistedArchives =
+        (change.newValue as PersistedArchives) || { tabs: [] };
       this._lastValue = newValue.tabs;
       this._events.emit(newValue.tabs);
     });

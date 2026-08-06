@@ -13,7 +13,7 @@
     "tsc": "tsc --watch"
   },
   "dependencies": {
-    "@formkit/auto-animate": "^1.0.0-beta.3",
+    "@formkit/auto-animate": "^0.10.0",
     "clsx": "^1.2.1",
     "jotai": "^1.13.0",
     "nanoid": "^4.0.0",
@@ -27,7 +27,7 @@
     "vite-plugin-istanbul": "^5.0.0",
     "@crxjs/vite-plugin": "^2.2.0",
     "@playwright/test": "^1.60.0",
-    "@types/chrome": "~0.0.181",
+    "@types/chrome": "~0.2.5",
     "@types/eslint": "^7.29.0",
     "@types/jest": "^26.0.19",
     "@types/node": "^24.5.2",
