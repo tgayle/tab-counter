@@ -15,6 +15,7 @@ export const test = base.extend<{
 
     const context = await chromium.launchPersistentContext('', {
       channel: 'chromium',
+      reducedMotion: 'reduce',
       args: [
         `--disable-extensions-except=${pathToExtension}`,
         `--load-extension=${pathToExtension}`,
