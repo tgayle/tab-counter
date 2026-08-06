@@ -129,6 +129,7 @@ export const TabItem: React.FC<{
       </div>
 
       <div className="flex">
+        {tab.pinned && <div className="badge badge-secondary">Pinned</div>}
         {tab.audible && <div className="badge badge-success">Audible</div>}
         {tab.mutedInfo?.muted && <div className="badge badge-error">Muted</div>}
         {tab.incognito && <div className="badge badge-neutral ">Incognito</div>}
