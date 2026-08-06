@@ -5,7 +5,7 @@
     "": {
       "name": "tab-counter",
       "dependencies": {
-        "@formkit/auto-animate": "^1.0.0-beta.3",
+        "@formkit/auto-animate": "^0.10.0",
         "clsx": "^1.2.1",
         "jotai": "^1.13.0",
         "nanoid": "^4.0.0",
@@ -18,7 +18,7 @@
       "devDependencies": {
         "@crxjs/vite-plugin": "^2.2.0",
         "@playwright/test": "^1.60.0",
-        "@types/chrome": "~0.0.181",
+        "@types/chrome": "~0.2.5",
         "@types/eslint": "^7.29.0",
         "@types/jest": "^26.0.19",
         "@types/node": "^24.5.2",
@@ -153,7 +153,7 @@
 
     "@eslint/js": ["@eslint/js@8.57.0", "", {}, "sha512-Ys+3g2TaW7gADOJzPt83SJtCDhMjndcDMFVQ/Tj9iA1BfJzFKD9mAUXT3OenpuPHbI6P/myECxRJrofUsDx/5g=="],
 
-    "@formkit/auto-animate": ["@formkit/auto-animate@1.0.0-beta.3", "", {}, "sha512-glsi+ytwQpxT/Ctr9GtcIfVr4dO6mJ04mQbNU8MFSdCdqMopHtyfU5Fib0+9lNFIeR0luY4/0NW95/2R5pKsag=="],
+    "@formkit/auto-animate": ["@formkit/auto-animate@0.10.0", "", {}, "sha512-KGomRttjUfORuPUaR/ZGQw+6xfMrTM+sxnILv7JAd9AmabU9rg9i6gF/iC0Ih+QpKCubJpCA/1DX9UHKE8cX+A=="],
 
     "@humanwhocodes/config-array": ["@humanwhocodes/config-array@0.11.14", "", { "dependencies": { "@humanwhocodes/object-schema": "^2.0.2", "debug": "^4.3.1", "minimatch": "^3.0.5" } }, "sha512-3T8LkOmg45BV5FICb15QQMsyUSWrQ8AygVfC7ZG32zOalnqrilm018ZVCw0eapXux8FtA33q8PSRSstjee3jSg=="],
 
@@ -231,7 +231,7 @@
 
     "@types/babel__traverse": ["@types/babel__traverse@7.20.5", "", { "dependencies": { "@babel/types": "^7.20.7" } }, "sha512-WXCyOcRtH37HAUkpXhUduaxdm82b4GSlyTqajXviN4EfiuPgNYR109xMCKvpl6zPIpua0DGlMEDCq+g8EdoheQ=="],
 
-    "@types/chrome": ["@types/chrome@0.0.266", "", { "dependencies": { "@types/filesystem": "*", "@types/har-format": "*" } }, "sha512-QSQWJTL7NjZElvq/6/E5C1+pHgEP8UAJzwoz7M4vSJ7AECt6NNehJ+tU6snnvuTqZOBjFCivvitYo5+8tNPmhg=="],
+    "@types/chrome": ["@types/chrome@0.2.5", "", { "dependencies": { "@types/filesystem": "*", "@types/har-format": "*" } }, "sha512-DwLFgwj3D0zjxRBhQ3610RBso2g+yI1cakq/JdIGopZ9Bc5UhQluyfcLGZwivFE4t2h4b2QZYZhPV7KylExSbA=="],
 
     "@types/eslint": ["@types/eslint@7.29.0", "", { "dependencies": { "@types/estree": "*", "@types/json-schema": "*" } }, "sha512-VNcvioYDH8/FxaeTKkM4/TiTwt6pBV9E3OfGmvaw8tPl0rrHCJ4Ll15HRT+pMiFAf/MLQvAzC+6RzUMEL9Ceng=="],
 

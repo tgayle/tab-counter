@@ -240,7 +240,7 @@ function useCurrentTab() {
   const [tab, setTab] = useState<chrome.tabs.Tab | null>(null);
 
   useEffect(() => {
-    const onActivated = async (info: chrome.tabs.TabActiveInfo) => {
+    const onActivated = async (info: chrome.tabs.OnActivatedInfo) => {
       if (info.windowId !== currentWindow?.id) {
         return;
       }

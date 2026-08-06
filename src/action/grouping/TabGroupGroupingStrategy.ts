@@ -82,6 +82,7 @@ export class TabGroupGroupingStrategy extends TabGroupingStrategy<
                 color: 'grey',
                 id: chrome.tabGroups.TAB_GROUP_ID_NONE,
                 windowId: -1,
+                shared: false,
               };
         return {
           displayName: tabGroup.title ?? 'Unknown',

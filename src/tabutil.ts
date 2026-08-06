@@ -197,7 +197,7 @@ export async function createTabGroup(
         group ? group.id !== (tab as chrome.tabs.Tab).groupId : true,
       )
       .map((tab) => tab.id)
-      .filter((id): id is number => id !== undefined),
+      .filter((id): id is number => id !== undefined) as [number, ...number[]],
   });
 
   return await chrome.tabGroups.update(groupId, {
