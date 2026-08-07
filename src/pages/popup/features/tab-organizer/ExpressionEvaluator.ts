@@ -36,7 +36,9 @@ export function useEvaluateTabExpression(
 ): EvaluatedTabExpression {
   const groups = useMemo(() => countExpressionGroups(expression), [expression]);
   const externalGroupsValue = useMemo(() => groups ?? [], [groups]);
-  const { all } = useAtomValue(allTabsAtom);
+  const {
+    tabs: { all },
+  } = useAtomValue(allTabsAtom);
   const currentWindow = useAtomValue(currentWindowAtom);
 
   const matchedTabs = useMemo(() => {

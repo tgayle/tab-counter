@@ -12,7 +12,8 @@
     "strict": true,
     "target": "ES2018",
     "skipLibCheck": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "noUncheckedSideEffectImports": false
   },
   "include": ["src/", "tests", "vite.config.mts", "global.ts", "playwright.config.ts"],
 }
