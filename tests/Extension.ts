@@ -38,6 +38,16 @@ export class ExtensionPage {
     return this.page.getByTestId('tab-search-input');
   }
 
+  get settingsButton() {
+    return this.page.locator('button.absolute.right-0');
+  }
+
+  get excludePinnedTabsCheckbox() {
+    return this.page.getByRole('checkbox', {
+      name: 'Exclude pinned tabs from tab count',
+    });
+  }
+
   async openTabs(...urls: string[]) {
     const context = this.page.context();
     const pages = await Promise.all(
@@ -63,6 +73,24 @@ export class ExtensionPage {
   async setFilterOption(value: string) {
     await this.filterMenuButton.click();
     await this.filterMenu.getByText(value, { exact: true }).click();
+  }
+
+  async pinTab(target: Page) {
+    const targetUrl = target.url();
+
+    await this.page.evaluate(async (url) => {
+      const tab = (await chrome.tabs.query({})).find((tab) => tab.url === url);
+
+      if (tab?.id === undefined) {
+        throw new Error(`Unable to find browser tab for ${url}`);
+      }
+
+      await chrome.tabs.update(tab.id, { pinned: true });
+    }, targetUrl);
+  }
+
+  async getBadgeText() {
+    return this.page.evaluate(() => chrome.action.getBadgeText({}));
   }
 
   tabGroup(n: number) {

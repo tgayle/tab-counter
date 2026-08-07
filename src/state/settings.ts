@@ -118,10 +118,21 @@ export const excludePinnedTabsAtom = atom(
 );
 
 excludePinnedTabsAtom.onMount = (set) => {
+  let mounted = true;
+
+  void settings.loaded.then(() => {
+    if (mounted) {
+      set(settings.current.excludePinnedTabs ?? false);
+    }
+  });
+
   const onSettingsChange: SettingsUpdateListener = (settings) => {
     set(settings.excludePinnedTabs ?? false);
   };
 
   settings.addListener(onSettingsChange);
-  return () => settings.removeListener(onSettingsChange);
+  return () => {
+    mounted = false;
+    settings.removeListener(onSettingsChange);
+  };
 };
