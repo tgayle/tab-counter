@@ -4,6 +4,7 @@ import { atom, useAtom } from 'jotai';
 import Features from '../../Features';
 import { TabOrganizerPage } from './features/tab-organizer/TabOrganizerPage';
 import { activeToolsTab } from '../../state/ui';
+import { excludePinnedTabsAtom } from '../../state/settings';
 
 export enum ToolsTab {
   Rules = 'rules',
@@ -12,10 +13,6 @@ export enum ToolsTab {
 
 export function ToolsPane() {
   const [activeTab, setActiveTab] = useAtom(activeToolsTab);
-
-  if (!Features.TAB_GROUPING) {
-    return <RulesPage />;
-  }
 
   if (activeTab === null) {
     return <ToolsList onSelect={setActiveTab} />;
@@ -30,6 +27,10 @@ export function ToolsPane() {
 }
 
 function ToolsList({ onSelect }: { onSelect: (tab: ToolsTab | null) => void }) {
+  const [excludePinnedTabs, setExcludePinnedTabs] = useAtom(
+    excludePinnedTabsAtom,
+  );
+
   const onClick: MouseEventHandler<HTMLButtonElement> = (e) => {
     if (Object.values(ToolsTab).includes(e.currentTarget.name as ToolsTab)) {
       onSelect(e.currentTarget.name as ToolsTab);
@@ -39,20 +40,38 @@ function ToolsList({ onSelect }: { onSelect: (tab: ToolsTab | null) => void }) {
   };
 
   return (
-    <div className="divide-y">
-      <ToolCard
-        name={ToolsTab.Rules}
-        title="Manage Rules"
-        subtitle="Create rules to change how tabs are grouped"
-        onClick={onClick}
-      />
+    <div>
+      <h3 className="text-2xl p-2">Settings</h3>
+      <div className="divide-y">
+        <div className="form-control px-1">
+          <label className="label cursor-pointer">
+            <span className="label-text">
+              Exclude pinned tabs from tab count
+            </span>
+            <input
+              type="checkbox"
+              checked={excludePinnedTabs}
+              onChange={(e) => setExcludePinnedTabs(e.target.checked)}
+              className="checkbox"
+            />
+          </label>
+        </div>
+        <ToolCard
+          name={ToolsTab.Rules}
+          title="Manage Rules"
+          subtitle="Create rules to change how tabs are grouped"
+          onClick={onClick}
+        />
 
-      <ToolCard
-        name={ToolsTab.Organize}
-        title="Organize Tabs"
-        subtitle="Create an expression to reorder tabs across windows"
-        onClick={onClick}
-      />
+        {Features.TAB_GROUPING && (
+          <ToolCard
+            name={ToolsTab.Organize}
+            title="Organize Tabs"
+            subtitle="Create an expression to reorder tabs across windows"
+            onClick={onClick}
+          />
+        )}
+      </div>
     </div>
   );
 }

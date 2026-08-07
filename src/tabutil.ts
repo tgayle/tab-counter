@@ -1,4 +1,5 @@
 import browser from 'webextension-polyfill';
+import settings from './settings';
 export type Tab = browser.Tabs.Tab & { groupId?: number };
 export type BrowserWindow = browser.Windows.Window;
 
@@ -21,20 +22,31 @@ export async function getTabInfo(): Promise<TabInfo> {
   const key = `getTabInfo ${start}`;
   console.time(key);
   const tabs = await browser.tabs.query({});
+  await settings.loaded;
 
   const [normalTabs, incognitoTabs] = partition(tabs, (tab) => !tab.incognito);
 
-  const text = `${normalTabs.length}${
-    incognitoTabs.length ? '/' + incognitoTabs.length : ''
+  let totalTabCount = tabs.length;
+  let normalTabCount = normalTabs.length;
+  let incognitoTabCount = incognitoTabs.length;
+
+  if (settings.current.excludePinnedTabs) {
+    totalTabCount = tabs.filter((tab) => !tab.pinned).length;
+    normalTabCount = normalTabs.filter((tab) => !tab.pinned).length;
+    incognitoTabCount = incognitoTabs.filter((tab) => !tab.pinned).length;
+  }
+
+  const text = `${normalTabCount}${
+    incognitoTabCount ? '/' + incognitoTabCount : ''
   }`;
 
   console.timeEnd(key);
   return {
     text,
     count: {
-      all: tabs.length,
-      incognito: incognitoTabs.length,
-      normal: normalTabs.length,
+      all: totalTabCount,
+      incognito: incognitoTabCount,
+      normal: normalTabCount,
     },
     tabs: {
       normal: normalTabs,

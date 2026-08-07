@@ -1,15 +1,16 @@
 import browser from 'webextension-polyfill';
 import { debounce, getTabInfo } from './tabutil';
 
-const debouncedUpdateCount = debounce('updateBadgeCount', updateCount, 50);
+const debouncedUpdateCount = debounce('updateBadgeCount', updateBadgeCount, 50);
 
 export function setupBadgeCount() {
   browser.tabs.onCreated.addListener(debouncedUpdateCount);
   browser.tabs.onRemoved.addListener(debouncedUpdateCount);
+  browser.tabs.onUpdated.addListener(debouncedUpdateCount);
   debouncedUpdateCount();
 }
 
-async function updateCount() {
+export async function updateBadgeCount() {
   const { count } = await getTabInfo();
 
   let text: string;
