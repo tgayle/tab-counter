@@ -1,6 +1,7 @@
 import { crx } from '@crxjs/vite-plugin';
-import zip from 'rollup-plugin-zip';
+import zip from 'vite-plugin-zip-pack';
 import manifest from './src/manifest';
+import pkg from './package.json';
 import react from '@vitejs/plugin-react';
 import istanbul from 'vite-plugin-istanbul';
 import { defineConfig } from 'vite';
@@ -34,6 +35,10 @@ export default defineConfig({
     }),
     react(),
     crx({ manifest }),
-    isProduction && zip({ dir: 'releases' }),
+    isProduction &&
+      zip({
+        outDir: 'releases',
+        outFileName: `${pkg.name}-${pkg.version}.zip`,
+      }),
   ],
 });
