@@ -42,20 +42,23 @@ export const PopupPane = ({ sidePanel }: { sidePanel?: boolean }) => {
   const [selectedTab, setSelectedTab] = useAtom(selectedTabAtom);
 
   const {
-    all: allTabs,
-    incognito: incogTabs,
-    normal: normalTabs,
+    tabs: { all: allTabs, incognito: incogTabs, normal: normalTabs },
+    count: {
+      all: totalTabCount,
+      incognito: incognitoTabCount,
+      normal: normalTabCount,
+    },
   } = useAtomValue(allTabsAtom);
 
   const tabTitles: (TabDescription | null)[] = [
     Features.TAB_ARCHIVING
       ? ([ActiveTab.Archived, 'Archived', 0] as const)
       : null,
-    [ActiveTab.All, 'All', allTabs.length],
+    [ActiveTab.All, 'All', totalTabCount],
     normalTabs.length && incogTabs.length
-      ? [ActiveTab.Normal, 'Normal', normalTabs.length]
+      ? [ActiveTab.Normal, 'Normal', normalTabCount]
       : null,
-    incogTabs.length ? [ActiveTab.Incog, 'Incognito', incogTabs.length] : null,
+    incogTabs.length ? [ActiveTab.Incog, 'Incognito', incognitoTabCount] : null,
   ];
 
   useEffect(() => {
@@ -66,7 +69,7 @@ export const PopupPane = ({ sidePanel }: { sidePanel?: boolean }) => {
     ) {
       setSelectedTab(ActiveTab.All);
     }
-  }, [selectedTab, normalTabs.length, incogTabs.length]);
+  }, [selectedTab, normalTabCount, incognitoTabCount]);
 
   return (
     <div className="w-full max-w-full h-screen max-h-screen flex flex-col relative">

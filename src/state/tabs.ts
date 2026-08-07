@@ -9,6 +9,7 @@ import { groupingRulesAtom } from './rules';
 import { tabFilterAtom } from './settings';
 import { expandedSectionsAtom, selectedTabAtom } from './ui';
 import { TabGroupingStrategies } from '../action/grouping/TabGroupingStrategies';
+import settings from '../settings';
 
 export const tabGrouper = new TabGrouper();
 export const currentWindowAtom = atom<BrowserWindow | null>(null);
@@ -35,10 +36,18 @@ export const searchQueryAtom = atom(
   },
 );
 
-const tabsAtom = atom<Awaited<ReturnType<typeof getTabInfo>>['tabs']>({
-  normal: [],
-  incognito: [],
-  all: [],
+const tabsAtom = atom<Awaited<ReturnType<typeof getTabInfo>>>({
+  tabs: {
+    normal: [],
+    incognito: [],
+    all: [],
+  },
+  count: {
+    all: 0,
+    incognito: 0,
+    normal: 0,
+  },
+  text: '0',
 });
 
 tabsAtom.onMount = (setAtom) => {
@@ -57,8 +66,8 @@ tabsAtom.onMount = (setAtom) => {
     timer = {
       id: setTimeout(async () => {
         console.log(`${Date.now()} Updating Tabs: ${reason}`);
-        const { tabs } = await getTabInfo();
-        setAtom(tabs);
+        const tabInfo = await getTabInfo();
+        setAtom(tabInfo);
         timer = null;
       }, 150),
       origin: reason,
@@ -70,12 +79,14 @@ tabsAtom.onMount = (setAtom) => {
   const onUpdate = updateTabs('onUpdated');
   const onWindowCreate = updateTabs('windowCreated');
   const onWindowRemove = updateTabs('windowRemoved');
+  const onSettingsUpdate = updateTabs('settings');
 
   browser.tabs.onCreated.addListener(onCreate);
   browser.tabs.onRemoved.addListener(onRemove);
   browser.tabs.onUpdated.addListener(onUpdate);
   browser.windows.onCreated.addListener(onWindowCreate);
   browser.windows.onRemoved.addListener(onWindowRemove);
+  settings.addListener(onSettingsUpdate);
 
   updateTabs('init')();
 
@@ -85,6 +96,7 @@ tabsAtom.onMount = (setAtom) => {
     browser.tabs.onUpdated.removeListener(onUpdate);
     browser.windows.onCreated.removeListener(onWindowCreate);
     browser.windows.onRemoved.removeListener(onWindowRemove);
+    settings.removeListener(onSettingsUpdate);
   };
 };
 
@@ -95,7 +107,7 @@ export const filteredTabGroups = loadable(
     get(groupingRulesAtom);
     tabGrouper.windowId = get(currentWindowAtom)?.id ?? -1;
     const filters = get(tabFilterAtom);
-    const tabs = get(allTabsAtom);
+    const tabs = get(allTabsAtom).tabs;
     const activeTab = get(selectedTabAtom);
 
     const targetTabs =

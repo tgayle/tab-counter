@@ -11,6 +11,7 @@ enum FilterSettingsKeys {
   GROUP_ORDER = 'group_order',
   TAB_GROUPING = 'tab_grouping',
   TAB_ORDER = 'tab_order',
+  EXCLUDE_PINNED_TABS = 'exclude_pinned_tabs',
 }
 
 export type FilterSettings = {
@@ -18,6 +19,7 @@ export type FilterSettings = {
   tabGrouping: GroupTabsByOptions;
   groupSortBy: GroupSortOrder;
   tabSortBy: TabSortOrder;
+  excludePinnedTabs?: boolean;
 };
 
 export type SettingsUpdateListener = (settings: FilterSettings) => void;
@@ -32,6 +34,7 @@ class Settings {
   private tabGrouping: GroupTabsByOptions = GroupTabsByOptions.Domain;
   private groupSortBy: GroupSortOrder = GroupSortOrder.Asc;
   private tabSortBy: TabSortOrder = TabSortOrder.Asc;
+  private excludePinnedTabs: boolean = false;
   private listeners: SettingsUpdateListener[] = [];
 
   get current(): FilterSettings {
@@ -40,6 +43,7 @@ class Settings {
       tabFilterType: this.tabFilterType ?? TabFilterType.All,
       tabGrouping: this.tabGrouping ?? GroupTabsByOptions.Domain,
       tabSortBy: this.tabSortBy ?? TabSortOrder.Asc,
+      excludePinnedTabs: this.excludePinnedTabs ?? false,
     };
   }
 
@@ -54,6 +58,7 @@ class Settings {
       FilterSettingsKeys.GROUP_ORDER,
       FilterSettingsKeys.TAB_GROUPING,
       FilterSettingsKeys.TAB_ORDER,
+      FilterSettingsKeys.EXCLUDE_PINNED_TABS,
     ]);
 
     this.tabFilterType =
@@ -63,6 +68,8 @@ class Settings {
     this.tabGrouping =
       data[FilterSettingsKeys.TAB_GROUPING] ?? GroupTabsByOptions.Domain;
     this.tabSortBy = data[FilterSettingsKeys.TAB_ORDER] ?? TabSortOrder.Asc;
+    this.excludePinnedTabs =
+      data[FilterSettingsKeys.EXCLUDE_PINNED_TABS] ?? false;
     this.loadedResolver();
   }
 
@@ -109,6 +116,13 @@ class Settings {
           changes[FilterSettingsKeys.TAB_ORDER].newValue ?? TabSortOrder.Asc;
       }
 
+      if (changes[FilterSettingsKeys.EXCLUDE_PINNED_TABS]) {
+        changed = true;
+        this.excludePinnedTabs = Boolean(
+          changes[FilterSettingsKeys.EXCLUDE_PINNED_TABS].newValue,
+        );
+      }
+
       if (changed) {
         this.notifyChange();
       }
@@ -133,6 +147,11 @@ class Settings {
   setTabSortBy = (it: TabSortOrder) =>
     browser.storage.sync.set({
       [FilterSettingsKeys.TAB_ORDER]: it,
+    });
+
+  setExcludePinnedTabs = (it: boolean) =>
+    browser.storage.sync.set({
+      [FilterSettingsKeys.EXCLUDE_PINNED_TABS]: it,
     });
 }
 

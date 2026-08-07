@@ -7,6 +7,7 @@ import {
 } from '../action/TabFilter';
 import { Filters } from '../action/TabFilterProcessor';
 import settings, { SettingsUpdateListener } from '../settings';
+import { updateBadgeCount } from '../badge';
 
 export const tabFilterAtom = atom<Filters>({
   query: '',
@@ -106,3 +107,21 @@ export const setTabGroupingAtom = atom(
     });
   },
 );
+
+export const excludePinnedTabsAtom = atom(
+  settings.current.excludePinnedTabs ?? false,
+  async (get, set, excludePinned: boolean) => {
+    await settings.setExcludePinnedTabs(excludePinned);
+    set(excludePinnedTabsAtom, excludePinned);
+    await updateBadgeCount();
+  },
+);
+
+excludePinnedTabsAtom.onMount = (set) => {
+  const onSettingsChange: SettingsUpdateListener = (settings) => {
+    set(settings.excludePinnedTabs ?? false);
+  };
+
+  settings.addListener(onSettingsChange);
+  return () => settings.removeListener(onSettingsChange);
+};
